@@ -79,7 +79,7 @@ xcodebuild -project MenuMeters.xcodeproj -scheme MenuMeters -configuration Relea
 
 echo "==> Signing with the Developer ID"
 xcodebuild -exportArchive -archivePath "$ARCHIVE" -exportOptionsPlist exportOptions.plist \
-	-exportPath "$EXPORT" -allowProvisioningUpdates
+	-exportPath "$EXPORT"
 codesign --verify --deep --strict --verbose=2 "$APP"
 BUILT=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP/Contents/Info.plist")
 [ "$BUILT" = "$VERSION" ] || fail "the app reports version $BUILT but InfoPlistPreprocessor.h says $VERSION"
