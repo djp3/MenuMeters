@@ -18,7 +18,7 @@ What's different from 2.1.6.1:
 
 It has been tried only on macOS 27.2, on an Apple silicon Mac.
 
-The same fix is offered upstream as a pull request. Once upstream ships a fix, use that, and this fork will be archived.
+The same fix is offered upstream as [yujitach/MenuMeters#328](https://github.com/yujitach/MenuMeters/pull/328). Once upstream ships a fix, use that, and this fork will be archived.
 
 ## Download and install
 
