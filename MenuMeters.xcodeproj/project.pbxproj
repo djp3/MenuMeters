@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		330247652366CB7A00F88D61 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 330247642366CB7A00F88D61 /* Sparkle.framework */; };
-		330247672366CEA800F88D61 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 330247662366CEA800F88D61 /* dsa_pub.pem */; };
 		3302476A2366CF7F00F88D61 /* Sparkle.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 330247642366CB7A00F88D61 /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		330611032367EA4C0016E763 /* MenuMetersMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 330611022367EA4C0016E763 /* MenuMetersMainMenu.xib */; };
 		3325978C25BE7DB10070CE37 /* applesilicon_hardware_reader.m in Sources */ = {isa = PBXBuildFile; fileRef = 3325978B25BE7DB10070CE37 /* applesilicon_hardware_reader.m */; };
@@ -121,7 +120,6 @@
 		6349C13824BB733300C6FC99 /* Dark Color ArrowsRead.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D42C6C951996DA77005F87BD /* Dark Color ArrowsRead.tiff */; };
 		6349C13924BB733300C6FC99 /* LightsWrite.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D42EC98303D49BDE00A87BC9 /* LightsWrite.tiff */; };
 		6349C13A24BB733300C6FC99 /* MenuMetersPref.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3384540A2105C3AA00D4DA92 /* MenuMetersPref.xib */; };
-		6349C13B24BB733300C6FC99 /* dsa_pub.pem in Resources */ = {isa = PBXBuildFile; fileRef = 330247662366CEA800F88D61 /* dsa_pub.pem */; };
 		6349C13C24BB733300C6FC99 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33883D492365E61200B8AC14 /* Localizable.strings */; };
 		6349C13D24BB733300C6FC99 /* DiskImageSet.strings in Resources */ = {isa = PBXBuildFile; fileRef = D4E4BF8F04F333B100A87BC9 /* DiskImageSet.strings */; };
 		6349C13E24BB733300C6FC99 /* Dark Color ArrowsReadWrite.tiff in Resources */ = {isa = PBXBuildFile; fileRef = D42C6C961996DA77005F87BD /* Dark Color ArrowsReadWrite.tiff */; };
@@ -157,7 +155,6 @@
 		08F9457E2752440700FC62A5 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/DiskImageSet.strings; sourceTree = "<group>"; };
 		08F9457F2752440700FC62A5 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		330247642366CB7A00F88D61 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
-		330247662366CEA800F88D61 /* dsa_pub.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsa_pub.pem; sourceTree = "<group>"; };
 		330611022367EA4C0016E763 /* MenuMetersMainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MenuMetersMainMenu.xib; sourceTree = "<group>"; };
 		330D68B72105AB950041B689 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/DiskImageSet.strings"; sourceTree = "<group>"; };
 		3325978B25BE7DB10070CE37 /* applesilicon_hardware_reader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = applesilicon_hardware_reader.m; sourceTree = "<group>"; };
@@ -334,7 +331,6 @@
 				3383C1721B69B72500915D5D /* AppDelegate.h */,
 				3383C1731B69B72600915D5D /* AppDelegate.m */,
 				330611022367EA4C0016E763 /* MenuMetersMainMenu.xib */,
-				330247662366CEA800F88D61 /* dsa_pub.pem */,
 				3383C1781B69B72600915D5D /* Assets.xcassets */,
 				33883D492365E61200B8AC14 /* Localizable.strings */,
 				3383C17D1B69B72600915D5D /* Info.plist */,
@@ -730,7 +726,6 @@
 				33883D1C23655C9900B8AC14 /* Dark Color ArrowsRead.tiff in Resources */,
 				33883D2023655C9900B8AC14 /* LightsWrite.tiff in Resources */,
 				33883D47236568CB00B8AC14 /* MenuMetersPref.xib in Resources */,
-				330247672366CEA800F88D61 /* dsa_pub.pem in Resources */,
 				33883D4C2365E61200B8AC14 /* Localizable.strings in Resources */,
 				33883D482365E3D400B8AC14 /* DiskImageSet.strings in Resources */,
 				33B440112594675E00CBBEDF /* com.ragingmenace.MenuMeters.plist in Resources */,
@@ -774,7 +769,6 @@
 				6349C13824BB733300C6FC99 /* Dark Color ArrowsRead.tiff in Resources */,
 				6349C13924BB733300C6FC99 /* LightsWrite.tiff in Resources */,
 				6349C13A24BB733300C6FC99 /* MenuMetersPref.xib in Resources */,
-				6349C13B24BB733300C6FC99 /* dsa_pub.pem in Resources */,
 				6349C13C24BB733300C6FC99 /* Localizable.strings in Resources */,
 				6349C13D24BB733300C6FC99 /* DiskImageSet.strings in Resources */,
 				33B440122594675E00CBBEDF /* com.ragingmenace.MenuMeters.plist in Resources */,

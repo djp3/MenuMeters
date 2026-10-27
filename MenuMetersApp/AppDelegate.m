@@ -4,6 +4,8 @@
 //
 //  Created by Yuji on 2015/07/30.
 //
+//  Changed 2026-10-27 by Don Patterson: updates come from the fork at
+//  github.com/djp3/MenuMeters.
 //
 
 #import "AppDelegate.h"
@@ -75,7 +77,7 @@
     [self killOlderInstances];
 #ifdef SPARKLE
     updater=[SUUpdater sharedUpdater];
-    updater.feedURL=[NSURL URLWithString:@"https://member.ipmu.jp/yuji.tachikawa/MenuMetersElCapitan/MenuMeters-Update.xml"];
+    updater.feedURL=[NSURL URLWithString:@"https://github.com/djp3/MenuMeters/releases/latest/download/appcast.xml"];
     pref=[[MenuMetersPref alloc] initWithAboutFileName:WELCOME andUpdater:updater];
 #else
     pref=[[MenuMetersPref alloc] initWithAboutFileName:WELCOME];

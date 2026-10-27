@@ -1,4 +1,4 @@
-# MenuMeters 2.1.6.2: fixed for macOS 27.2 (unofficial)
+# MenuMeters 2.1.6.2-djp3.1: fixed for macOS 27.2 (unofficial)
 
 This is an unofficial fork of [yujitach/MenuMeters](https://github.com/yujitach/MenuMeters), for one reason: MenuMeters 2.1.6.1 crashes at launch wherever `/var/run/pppconfd` is missing, the socket its network meter asked for PPP status. So far that's macOS 27.2, Sequoia 15.8.2 and a Sonoma beta ([yujitach/MenuMeters#324](https://github.com/yujitach/MenuMeters/issues/324), [#325](https://github.com/yujitach/MenuMeters/issues/325), [#326](https://github.com/yujitach/MenuMeters/issues/326), [#327](https://github.com/yujitach/MenuMeters/issues/327)).
 
@@ -13,8 +13,8 @@ What's different from 2.1.6.1:
 - **It starts without pppconfd.** The fix is Alexander Botev's, [posted in yujitach/MenuMeters#325](https://github.com/yujitach/MenuMeters/issues/325#issuecomment-6178898754), and is his commit here.
 - **A ppp interface, such as an L2TP VPN, should still be counted,** from the system's own traffic counters, as every other interface is. That hasn't been tried with a VPN. Without pppconfd, a PPP service's status line and its Connect and Disconnect menu items aren't shown.
 - **It builds with Xcode 27**, for Intel and Apple silicon, and needs macOS 12 or later. On macOS 11 or earlier it won't open; 2.1.6.1 is the one to use there.
-- **It also carries upstream's own changes made after 2.1.6.1, which were never released** (November 2021 to March 2022): a Turkish translation, a French fix, a change to how the login item is found ([yujitach/MenuMeters#282](https://github.com/yujitach/MenuMeters/issues/282)), building on older SDKs, and a check for whether macOS has hidden the menu item for lack of space (its alert is shown only by upstream's Sparkle build, so not by this one). [The full list](https://github.com/yujitach/MenuMeters/compare/2.1.6.1...e91b746).
-- **It never updates itself.** It's built without Sparkle, so check this page or upstream for news.
+- **It also carries upstream's own changes made after 2.1.6.1, which were never released** (November 2021 to March 2022): a Turkish translation, a French fix, a change to how the login item is found ([yujitach/MenuMeters#282](https://github.com/yujitach/MenuMeters/issues/282)), building on older SDKs, and a check for whether macOS has hidden the menu item for lack of space (its alert is shown by this build, which includes Sparkle). [The full list](https://github.com/yujitach/MenuMeters/compare/2.1.6.1...e91b746).
+- **It updates itself from this fork's releases.** It's signed with a Developer ID and notarized by Apple, and Sparkle checks the [releases of github.com/djp3/MenuMeters](https://github.com/djp3/MenuMeters/releases) for new builds.
 
 It has been tried only on macOS 27.2, on an Apple silicon Mac.
 
@@ -22,26 +22,16 @@ The same fix is offered upstream as [yujitach/MenuMeters#328](https://github.com
 
 ## Download and install
 
-Download **MenuMeters-2.1.6.2.zip** under Assets on the [Releases](https://github.com/joemoreno/MenuMeters/releases) page (not "Source code"). The app isn't notarized by Apple, so the first time you open it macOS asks you to confirm that you trust it. You only do this once.
+Download **MenuMeters-2.1.6.2-djp3.1.zip** under Assets on the [Releases](https://github.com/djp3/MenuMeters/releases) page (not "Source code"). The app is signed with a Developer ID and notarized by Apple, so it opens without warnings.
 
-1. Quit MenuMeters 2.1.6.1 if it's still in your menu bar.
-2. Double-click the zip to unzip it, if your browser hasn't already, and open the **MenuMeters 2.1.6.2** folder.
+1. Quit MenuMeters if it's in your menu bar.
+2. Double-click the zip to unzip it, if your browser hasn't already.
 3. Drag **MenuMeters** into your **Applications** folder, replacing the old copy. Your settings stay as they were, though macOS may ask again before MenuMeters can open Activity Monitor.
-4. Open it from Applications. macOS says it can't verify MenuMeters. Click **Done** (on macOS 14 and earlier, **Cancel**), not Move to Trash.
-5. Open **System Settings**, choose **Privacy & Security**, and scroll down to **Security**. You'll see a note that MenuMeters was blocked. Click **Open Anyway**. (On macOS 12, it's System Preferences, Security & Privacy, General.)
-6. When macOS asks once more, click **Open Anyway** (on macOS 14 and earlier, **Open**), and confirm with Touch ID or an administrator's password if asked.
-
-On macOS 14 and earlier you can instead Control-click MenuMeters in Applications, choose **Open**, then click **Open**.
-
-If you're comfortable with Terminal, this one command does the same as steps 4 to 6:
-
-```bash
-xattr -dr com.apple.quarantine /Applications/MenuMeters.app
-```
+4. Open it from Applications. From then on it offers new builds itself, through Sparkle.
 
 ## Build it yourself
 
-With Xcode 27, run `./build-release.sh`. It builds the release's app the same way (with Xcode 27.1, byte for byte the same), and the app lands in `build/MenuMeters.xcarchive/Products/Applications`.
+With Xcode 27, run `./build-release.sh`. It archives the "MenuMeters" scheme, signs the app with the Developer ID of team 9B6T3L36ML through `exportOptions.plist`, notarizes and staples it, zips it with THIRD-PARTY-NOTICES.md into `build/release/MenuMeters-<version>.zip`, and writes the Sparkle appcast for every release so far next to it. `./build-release.sh --publish` then tags `v<version>`, pushes to the `djp3` remote and creates the GitHub release with both files attached; `./build-release.sh --no-notarize` makes a local test build. The version is `MM_VERSION` in `InfoPlistPreprocessor.h`, and the release notes, shown both on GitHub and in Sparkle, are `release-notes/<version>.md`. The script's header lists what it needs.
 
 ## Changes in this tree
 
@@ -49,6 +39,7 @@ Dated, as the GNU General Public License asks; each changed source file also car
 
 - 2026-10-14, Alexander Botev: MenuMeters starts when pppconfd is missing (MenuMeterNetConfig.m, MenuMeterNetExtra.m, MenuMeterNetStats.m).
 - 2026-10-27, Joe Moreno: without pppconfd, ppp interfaces count as up (MenuMeterNetConfig.m) and are counted from the sysctl counters (MenuMeterNetStats.m); `(void)` prototypes so it builds with Xcode 27 (smc_reader.m, applesilicon_hardware_reader.m); in MenuMeters.xcodeproj/project.pbxproj, a deployment target of macOS 12.0 in all four target configurations and both architectures in the No Sparkle target's Release; the third-party notices, in THIRD-PARTY-NOTICES.md and the two hardware readers; version 2.1.6.2 (InfoPlistPreprocessor.h); this README section; and build-release.sh.
+- 2026-10-27, Don Patterson: Sparkle checks this fork's GitHub releases for updates and verifies them with its EdDSA key (MenuMetersApp/AppDelegate.m, MenuMeters-Info.plist; the DSA key file dsa_pub.pem is gone, from MenuMeters.xcodeproj/project.pbxproj too); version 2.1.6.2-djp3.1 with build number 2.1.6.2.1 (InfoPlistPreprocessor.h); build-release.sh signs with a Developer ID, notarizes and publishes, with exportOptions.plist, scripts/appcast.py and release-notes/; this README.
 
 ## Support and license
 

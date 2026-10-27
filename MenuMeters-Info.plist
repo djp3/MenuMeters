@@ -23,7 +23,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>MM_VERSION</string>
+	<string>MM_BUILD</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>
@@ -38,11 +38,11 @@
 	<string>NSApplication</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
-	<key>SUPublicDSAKeyFile</key>
-	<string>dsa_pub.pem</string>
+	<key>SUPublicEDKey</key>
+	<string>BlhimGK/QNInJec/WnPd8wq+ZBP84a1+urIA/slLP7g=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>36000</integer>
 	<key>SUSendProfileInfo</key>
-	<true/>
+	<false/>
 </dict>
 </plist>
