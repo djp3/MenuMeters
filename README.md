@@ -13,7 +13,7 @@ What's different from 2.1.6.1:
 - **It starts without pppconfd.** The fix is Alexander Botev's, [posted in yujitach/MenuMeters#325](https://github.com/yujitach/MenuMeters/issues/325#issuecomment-6178898754), and is his commit here.
 - **A ppp interface, such as an L2TP VPN, should still be counted,** from the system's own traffic counters, as every other interface is. That hasn't been tried with a VPN. Without pppconfd, a PPP service's status line and its Connect and Disconnect menu items aren't shown.
 - **It builds with Xcode 27**, for Intel and Apple silicon, and needs macOS 12 or later. On macOS 11 or earlier it won't open; 2.1.6.1 is the one to use there.
-- **It also carries upstream's own changes made after 2.1.6.1, which were never released** (November 2021 to March 2022): a Turkish translation, a French fix, a change to how the login item is found ([yujitach/MenuMeters#282](https://github.com/yujitach/MenuMeters/issues/282)), and building on older SDKs. [The full list](https://github.com/yujitach/MenuMeters/compare/2.1.6.1...e91b746).
+- **It also carries upstream's own changes made after 2.1.6.1, which were never released** (November 2021 to March 2022): a Turkish translation, a French fix, a change to how the login item is found ([yujitach/MenuMeters#282](https://github.com/yujitach/MenuMeters/issues/282)), building on older SDKs, and a check for whether macOS has hidden the menu item for lack of space (its alert is shown only by upstream's Sparkle build, so not by this one). [The full list](https://github.com/yujitach/MenuMeters/compare/2.1.6.1...e91b746).
 - **It never updates itself.** It's built without Sparkle, so check this page or upstream for news.
 
 It has been tried only on macOS 27.2, on an Apple silicon Mac.
@@ -41,14 +41,14 @@ xattr -dr com.apple.quarantine /Applications/MenuMeters.app
 
 ## Build it yourself
 
-With Xcode 27, run `./build-release.sh`. It builds exactly what the release contains, and the app lands in `build/MenuMeters.xcarchive/Products/Applications`.
+With Xcode 27, run `./build-release.sh`. It builds the release's app the same way (with Xcode 27.1, byte for byte the same), and the app lands in `build/MenuMeters.xcarchive/Products/Applications`.
 
 ## Changes in this tree
 
 Dated, as the GNU General Public License asks; each changed source file also carries its own note.
 
 - 2026-10-14, Alexander Botev: MenuMeters starts when pppconfd is missing (MenuMeterNetConfig.m, MenuMeterNetExtra.m, MenuMeterNetStats.m).
-- 2026-10-27, Joe Moreno: ppp interfaces are counted through sysctl when pppconfd is missing (MenuMeterNetConfig.m, MenuMeterNetStats.m); `(void)` prototypes so it builds with Xcode 27 (smc_reader.m, applesilicon_hardware_reader.m); in MenuMeters.xcodeproj/project.pbxproj, a deployment target of macOS 12.0 in all four target configurations and both architectures in the No Sparkle target's Release; the third-party notices, in THIRD-PARTY-NOTICES.md and the two hardware readers; version 2.1.6.2 (InfoPlistPreprocessor.h); this README section; and build-release.sh.
+- 2026-10-27, Joe Moreno: without pppconfd, ppp interfaces count as up (MenuMeterNetConfig.m) and are counted from the sysctl counters (MenuMeterNetStats.m); `(void)` prototypes so it builds with Xcode 27 (smc_reader.m, applesilicon_hardware_reader.m); in MenuMeters.xcodeproj/project.pbxproj, a deployment target of macOS 12.0 in all four target configurations and both architectures in the No Sparkle target's Release; the third-party notices, in THIRD-PARTY-NOTICES.md and the two hardware readers; version 2.1.6.2 (InfoPlistPreprocessor.h); this README section; and build-release.sh.
 
 ## Support and license
 
