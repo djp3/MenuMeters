@@ -603,7 +603,8 @@
     // Graph height does not include baseline, reserve the space for real data
     // since memory usage can never be zero.
     float renderHeight = (float)self.imageHeight;
-     for (renderPosition = 0; renderPosition < [ourPrefs memGraphLength]; renderPosition++) {
+    int graphLength = [ourPrefs memGraphLength];
+     for (renderPosition = 0; renderPosition < graphLength; renderPosition++) {
 
         // No data at this position?
         if (renderPosition >= [memHistory count]) break;
@@ -651,7 +652,8 @@
 	// Graph height does not include baseline, reserve the space for real data
 	// since memory usage can never be zero.
 	float renderHeight = (float)self.imageHeight;
- 	for (renderPosition = 0; renderPosition < [ourPrefs memGraphLength]; renderPosition++) {
+	int graphLength = [ourPrefs memGraphLength];
+ 	for (renderPosition = 0; renderPosition < graphLength; renderPosition++) {
 
 		// No data at this position?
 		if (renderPosition >= [memHistory count]) break;
