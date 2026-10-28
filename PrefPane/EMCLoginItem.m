@@ -39,6 +39,14 @@
     {
         ReleaseIconRef(_iconRef);
     }
+    if (url)
+    {
+        CFRelease(url);
+    }
+    if (itemBeforePath)
+    {
+        CFRelease(itemBeforePath);
+    }
 }
 
 - (instancetype)initWithBundle:(NSBundle *)bundle
@@ -146,8 +154,11 @@
             
             if (LSSharedFileListItemResolve(loginItem, kLSSharedFileListNoUserInteraction|kLSSharedFileListDoNotMountVolumes, &itemUrl, NULL) == noErr)
             {
-                if (CFEqual(itemUrl, url))
+                BOOL matches = CFEqual(itemUrl, url);
+                CFRelease(itemUrl);
+                if (matches)
                 {
+                    CFRelease(loginItems);
                     return YES;
                 }
             }
@@ -156,6 +167,7 @@
                 NSLog(@"Error: LSSharedFileListItemResolve failed.");
             }
         }
+        CFRelease(loginItems);
     }
     else
     {
@@ -189,6 +201,7 @@
     {
         NSLog(@"Error: LSSharedFileListInsertItemURL failed, could not create login item.");
     }
+    CFRelease(loginItems);
 }
 
 - (LSSharedFileListItemRef)findInsertionPoint:(LSSharedFileListRef)loginItems
@@ -226,7 +239,9 @@
         
         if (LSSharedFileListItemResolve(loginItem, kLSSharedFileListNoUserInteraction|kLSSharedFileListDoNotMountVolumes, &itemUrl, NULL) == noErr)
         {
-            if (CFEqual(itemUrl, path))
+            BOOL matches = CFEqual(itemUrl, path);
+            CFRelease(itemUrl);
+            if (matches)
             {
                 return loginItem;
             }
@@ -254,7 +269,9 @@
             
             if (LSSharedFileListItemResolve(loginItem, kLSSharedFileListNoUserInteraction|kLSSharedFileListDoNotMountVolumes, &itemUrl, NULL) == noErr)
             {
-                if (CFEqual(itemUrl, url))
+                BOOL matches = CFEqual(itemUrl, url);
+                CFRelease(itemUrl);
+                if (matches)
                 {
                     if (LSSharedFileListItemRemove(loginItems, loginItem) == noErr)
                     {
@@ -277,6 +294,7 @@
         {
             NSLog(@"Error: could not find login item to remove.");
         }
+        CFRelease(loginItems);
     }
     else
     {
@@ -287,13 +305,15 @@
 - (void)addAfterLast
 {
     itemBeforeInsertion = kLSSharedFileListItemLast;
-    itemBeforePath = nil;
+    if (itemBeforePath) CFRelease(itemBeforePath);
+    itemBeforePath = NULL;
 }
 
 - (void)addAfterFirst
 {
     itemBeforeInsertion = kLSSharedFileListItemBeforeFirst;
-    itemBeforePath = nil;
+    if (itemBeforePath) CFRelease(itemBeforePath);
+    itemBeforePath = NULL;
 }
 
 - (void)addAfterItemWithPath:(NSString *)path
@@ -308,6 +328,7 @@
     }
     
     itemBeforeInsertion = nil;
+    if (itemBeforePath) CFRelease(itemBeforePath);
     itemBeforePath = (CFURLRef)CFBridgingRetain([NSURL fileURLWithPath:path]);
 }
 
@@ -323,6 +344,7 @@
     }
     
     itemBeforeInsertion = nil;
+    if (itemBeforePath) CFRelease(itemBeforePath);
     itemBeforePath = (CFURLRef)CFBridgingRetain([NSURL fileURLWithPath:[bundle bundlePath]]);
 }
 
