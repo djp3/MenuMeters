@@ -58,6 +58,7 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     NSPipe*pipe;
     NSMutableData*buffer;
     int parseState; //0 is before the first PID, COMMAND ... ; 1 is just after it saw PID, ...
+    int sampleCount; // samples seen so far; top's first sample has no earlier one to compare with and reports 0.0 for every process
     NSMutableArray*tempArray;
 }
     
@@ -97,6 +98,7 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     
 - (void)startUpdateProcessList {
     parseState=0;
+    sampleCount=0;
     buffer=[NSMutableData data];
     task = [NSTask new];
     task.launchPath = @"/usr/bin/top";
@@ -123,14 +125,13 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     if(parseState==0){
         if([s hasPrefix:@"PID"]){
             parseState=1;
+            sampleCount++;
             tempArray=[NSMutableArray array];
         }
         return;
     }
     if([s hasPrefix:@"Processes:"]){
-        parseState=0;
-        // one sample completed
-        processes=tempArray;
+        [self finishSample];
         return;
     }
     
@@ -152,6 +153,19 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
                              kProcessListItemProcessNameKey:[self normalizedCommand:[commandName componentsJoinedByString:@" "]]
                              };
     [tempArray addObject:entry];
+    // A sample lists at most kCPUrocessCountMax processes, so the last of them completes it
+    if(tempArray.count>=kCPUrocessCountMax){
+        [self finishSample];
+    }
+}
+
+-(void)finishSample
+{
+    parseState=0;
+    if(sampleCount>1){
+        processes=tempArray;
+    }
+    tempArray=nil;
 }
 
 
