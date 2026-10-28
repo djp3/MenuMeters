@@ -796,7 +796,7 @@
     if(position!=-1){
         currentLoad=[loadHistory objectAtIndex:position];
     }
-	if (!currentLoad || ([currentLoad count] < processor)) {
+	if (!currentLoad || (processor >= [currentLoad count])) {
         *system = -1;
         *user = -1;
         return;
@@ -808,14 +808,16 @@
         *user = load.user;
     }else{
         double s=0,u=0;
-        int numberOfCPUs = [cpuInfo numberOfCPUs];
-        for (uint32_t cpuNum = 0; cpuNum < numberOfCPUs; cpuNum++) {
-                MenuMeterCPULoad *load = currentLoad[cpuNum];
+        NSUInteger sampledCPUs = MIN((NSUInteger)[cpuInfo numberOfCPUs], [currentLoad count]);
+        for (NSUInteger cpuNum = 0; cpuNum < sampledCPUs; cpuNum++) {
+            MenuMeterCPULoad *load = currentLoad[cpuNum];
             s+=load.system;
             u+=load.user;
-            }
-            s /= numberOfCPUs;
-            u /= numberOfCPUs;
+        }
+        if (sampledCPUs > 0) {
+            s /= sampledCPUs;
+            u /= sampledCPUs;
+        }
         *system=s;
         *user=u;
     }
