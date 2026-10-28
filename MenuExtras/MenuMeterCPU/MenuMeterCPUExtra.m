@@ -80,6 +80,7 @@
 {
     float cpuTemperatureDisplayWidth;
     float_t cpuTemperature; // the latest reading, taken once per timer tick
+    BOOL avgAllProcs; // the averaging preference, read when the configuration changes
 }
 
 - (instancetype)init {
@@ -456,8 +457,9 @@
 
 
     NSAttributedString*string=[self percentStringForLoad:totalLoad andColor:fgMenuThemeColor];
-    [string drawAtPoint:NSMakePoint(offset + percentWidth - ceilf((float)[string size].width) - 1,
-                                        (float)((self.imageHeight - [string size].height) / 2)+self.baselineOffset)];
+    NSSize stringSize = [string size];
+    [string drawAtPoint:NSMakePoint(offset + percentWidth - ceilf((float)stringSize.width) - 1,
+                                        (float)((self.imageHeight - stringSize.height) / 2)+self.baselineOffset)];
 
 }  // renderSinglePercentIntoImage:forProcessor:atOffset:
 
@@ -515,9 +517,10 @@
             temperatureString=@"???";
     }
     NSAttributedString *renderTemperatureString =[self renderTemperatureStringForString:temperatureString];
+    NSSize stringSize = [renderTemperatureString size];
     [renderTemperatureString drawAtPoint:NSMakePoint(
-         cpuTemperatureDisplayWidth - (float)round([renderTemperatureString size].width) - 1,
-         (float)((self.imageHeight-[renderTemperatureString size].height) / 2+self.baselineOffset)
+         cpuTemperatureDisplayWidth - (float)round(stringSize.width) - 1,
+         (float)((self.imageHeight-stringSize.height) / 2+self.baselineOffset)
     )];
 } // renderSingleTemperatureIntoImage:atOffset:
 
@@ -720,6 +723,7 @@
 #endif
 
     [self setupColor:nil];
+    avgAllProcs = [ourPrefs cpuAvgAllProcs];
     int numberOfCPUs = [ourPrefs cpuAvgLowerHalfProcs]?[cpuInfo numberOfCores]:[cpuInfo numberOfCPUs];
 
 	if ([ourPrefs cpuDisplayMode] & kCPUDisplayPercent) {
@@ -810,7 +814,7 @@
         return;
     }
 
-    if (![ourPrefs cpuAvgAllProcs]){
+    if (!avgAllProcs){
         MenuMeterCPULoad*load=currentLoad[processor];
         *system = load.system;
         *user = load.user;
