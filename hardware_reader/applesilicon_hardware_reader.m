@@ -122,8 +122,18 @@ NSArray*AppleSiliconTemperatureSensorNames(void)
     
 }
 
-float AppleSiliconTemperatureForName(NSString *productName) {
+// The service client for each sensor name, kept once it has been matched
+static NSMutableDictionary*servicesByName;
+
+static IOHIDServiceClientRef serviceForName(NSString *productName) {
     initEventSystem();
+    if(!servicesByName){
+        servicesByName=[NSMutableDictionary dictionary];
+    }
+    id cached=servicesByName[productName];
+    if(cached){
+        return (__bridge IOHIDServiceClientRef)cached;
+    }
 
 	NSDictionary *thermalSensors = @{@"PrimaryUsagePage": @(0xff00),
 									  @"PrimaryUsage": @(5),
@@ -131,15 +141,24 @@ float AppleSiliconTemperatureForName(NSString *productName) {
 	// ... this is the same as using kCFAllocatorDefault or the return value from CFAllocatorGetDefault()
 	IOHIDEventSystemClientSetMatching(eventSystem, (__bridge CFDictionaryRef)thermalSensors);
     NSArray* matchingsrvs = CFBridgingRelease(IOHIDEventSystemClientCopyServices(eventSystem)); // matchingsrvs = matching services
+    if([matchingsrvs count]>0){
+        servicesByName[productName]=matchingsrvs[0];
+        return (__bridge IOHIDServiceClientRef)matchingsrvs[0];
+    }
+    return NULL;
+}
+
+float AppleSiliconTemperatureForName(NSString *productName) {
     float temp=-273.15F;
-    if(matchingsrvs){
-        if([matchingsrvs count]>0){
-            IOHIDServiceClientRef sc = (__bridge IOHIDServiceClientRef)matchingsrvs[0];
-            IOHIDEventRef event = IOHIDServiceClientCopyEvent(sc, kIOHIDEventTypeTemperature, 0, 0); // here we use ...CopyEvent
-            if (event) {
-                temp = IOHIDEventGetFloatValue(event, IOHIDEventFieldBase(kIOHIDEventTypeTemperature));
-                CFRelease(event);
-            }
+    IOHIDServiceClientRef sc = serviceForName(productName);
+    if (sc) {
+        IOHIDEventRef event = IOHIDServiceClientCopyEvent(sc, kIOHIDEventTypeTemperature, 0, 0); // here we use ...CopyEvent
+        if (event) {
+            temp = IOHIDEventGetFloatValue(event, IOHIDEventFieldBase(kIOHIDEventTypeTemperature));
+            CFRelease(event);
+        } else {
+            // The service answers no longer; match it again on the next reading
+            [servicesByName removeObjectForKey:productName];
         }
     }
 
