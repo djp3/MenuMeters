@@ -791,6 +791,7 @@
 		}
 	} else {
 		// Release control if the user wants it for something else
+		[powerMate stopGlowRamp];
 		powerMate = nil;
 	}
 

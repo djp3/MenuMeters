@@ -50,5 +50,6 @@
 - (void)setGlow:(double)level rampInterval:(NSTimeInterval)interval;
 - (void)setPulse:(double)rate;
 - (void)stopPulse;
+- (void)stopGlowRamp;
 
 @end
