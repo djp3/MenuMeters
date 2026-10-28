@@ -142,6 +142,8 @@
 #if (__MAC_OS_X_VERSION_MAX_ALLOWED >= 101200)
             if(@available(macOS 10.12,*)){
                 statusItem.behavior=NSStatusItemBehaviorRemovalAllowed;
+                // The meter is enabled, whatever visibility the autosave name restored after a drag off the menu bar
+                statusItem.visible=YES;
                 [statusItem addObserver:self forKeyPath:@"visible" options:NSKeyValueObservingOptionNew context:nil];
             }
 #endif
@@ -165,8 +167,14 @@
 -(void)removeStatusItem
 {
     [updateTimer invalidate];
-    [[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
-    statusItem=nil;
+    if(statusItem){
+        if(@available(macOS 10.12,*)){
+            [statusItem removeObserver:self forKeyPath:@"visible"];
+        }
+        [statusItem.button removeObserver:self forKeyPath:@"effectiveAppearance"];
+        [[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
+        statusItem=nil;
+    }
     [[NSNotificationCenter defaultCenter] postNotification:[NSNotification notificationWithName:@"menuExtraUnloaded" object:self.bundleID]];
 }
 -(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
@@ -182,7 +190,12 @@
     if(@available(macOS 10.12,*)){
         if(object==statusItem && [keyPath isEqualToString:@"visible"]){
             if(!statusItem.visible){
-                [self removeStatusItem];
+                // The item is taken down once its own setter has returned
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if(self->statusItem && !self->statusItem.visible){
+                        [self removeStatusItem];
+                    }
+                });
             }
         }
     }
