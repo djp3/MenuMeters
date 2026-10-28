@@ -249,8 +249,12 @@ static void DeviceTerminated(void *ref, io_iterator_t iterator) {
 	// Clear pulsing
 	[self stopPulse];
 
-	// We tick every kGlowRampInterval seconds, is the interval too short?
-	if (interval <= kGlowRampInterval) [self setGlow:level];
+	// We tick every kGlowRampInterval seconds. An interval shorter than a tick,
+	// or a change too small for the device's 128 levels, is set in one step.
+	if ((interval <= kGlowRampInterval) || (fabs(level - lastGlowLevel) < (1.0 / 128))) {
+		[self setGlow:level];
+		return;
+	}
 
 	// Calc steps. We're happy with steps that are actually finer
 	// than the device can handle.
@@ -269,6 +273,13 @@ static void DeviceTerminated(void *ref, io_iterator_t iterator) {
 	[self glowRamp:rampTimer];
 
 } // setGlow:rampInterval:
+
+- (void)stopGlowRamp {
+
+	[rampTimer invalidate];
+	rampTimer = nil;
+
+} // stopGlowRamp
 
 - (void)setPulse:(double)rate {
 
