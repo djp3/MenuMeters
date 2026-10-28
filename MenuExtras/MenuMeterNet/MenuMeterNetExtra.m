@@ -272,7 +272,7 @@
 				if ([[details objectForKey:@"linkspeed"] doubleValue] < 0) {
 					speed = nil;
 				} else if ([[details objectForKey:@"linkspeed"] doubleValue] > 1000000000) {
-					speed = [NSString stringWithFormat:@" %.0f %@",
+					speed = [NSString stringWithFormat:@" %g %@",
 								([[details objectForKey:@"linkspeed"] doubleValue] / 1000000000),
 								[localizedStrings objectForKey:kGbpsLabel]];
 				} else if ([[details objectForKey:@"linkspeed"] doubleValue] > 1000000) {
