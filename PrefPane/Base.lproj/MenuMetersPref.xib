@@ -1349,10 +1349,19 @@
                                                 <autoresizingMask key="autoresizingMask"/>
                                             </scroller>
                                         </scrollView>
-                                        <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgn-At-Lg1">
-                                            <rect key="frame" x="14" y="127" width="400" height="18"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="check" title="Start MenuMeters at login" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="lgn-At-Lg2">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgn-At-Lb1">
+                                            <rect key="frame" x="22" y="49" width="195" height="16"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Login item:" id="lgn-At-Lb2">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgn-At-Lg1">
+                                            <rect key="frame" x="227" y="48" width="306" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Start MenuMeters at login" bezelStyle="regularSquare" imagePosition="left" inset="2" id="lgn-At-Lg2">
                                                 <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -1361,7 +1370,7 @@
                                             </connections>
                                         </button>
                                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="d2S-NP-QJd" userLabel="Sparkle UI Container">
-                                            <rect key="frame" x="-3" y="-3" width="554" height="125"/>
+                                            <rect key="frame" x="-3" y="-3" width="554" height="155"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <subviews>
                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HXi-JR-d2r">
@@ -1374,7 +1383,7 @@
                                                     </textFieldCell>
                                                 </textField>
                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n6x-ab-l7l">
-                                                    <rect key="frame" x="25" y="82" width="195" height="16"/>
+                                                    <rect key="frame" x="25" y="112" width="195" height="16"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Color tint:" id="mAZ-f2-5AJ">
                                                         <font key="font" metaFont="system"/>
@@ -1383,7 +1392,7 @@
                                                     </textFieldCell>
                                                 </textField>
                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="A9a-IR-dWk">
-                                                    <rect key="frame" x="233" y="99" width="109" height="16"/>
+                                                    <rect key="frame" x="233" y="129" width="109" height="16"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="original" id="FPO-Jo-ubG">
                                                         <font key="font" metaFont="system"/>
@@ -1392,7 +1401,7 @@
                                                     </textFieldCell>
                                                 </textField>
                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R2O-qP-JEf">
-                                                    <rect key="frame" x="25" y="52" width="195" height="16"/>
+                                                    <rect key="frame" x="25" y="82" width="195" height="16"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Activity monitor:" id="CDM-3t-gon">
                                                         <font key="font" metaFont="system"/>
@@ -1420,7 +1429,7 @@
                                                     </connections>
                                                 </popUpButton>
                                                 <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gf6-QI-d0d">
-                                                    <rect key="frame" x="230" y="51" width="306" height="18"/>
+                                                    <rect key="frame" x="230" y="81" width="306" height="18"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <buttonCell key="cell" type="check" title="Opens specific panes" bezelStyle="regularSquare" imagePosition="left" inset="2" id="phH-yJ-I6O">
                                                         <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -1443,7 +1452,7 @@
                                                     </connections>
                                                 </button>
                                                 <slider verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="n7d-Nj-Lcq">
-                                                    <rect key="frame" x="230" y="76" width="306" height="28"/>
+                                                    <rect key="frame" x="230" y="106" width="306" height="28"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <sliderCell key="cell" continuous="YES" state="on" alignment="left" maxValue="100" doubleValue="10" tickMarkPosition="below" sliderType="linear" id="PMb-IL-jfo"/>
                                                     <connections>
@@ -1451,7 +1460,7 @@
                                                     </connections>
                                                 </slider>
                                                 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Xca-Uy-LR7">
-                                                    <rect key="frame" x="427" y="99" width="109" height="16"/>
+                                                    <rect key="frame" x="427" y="129" width="109" height="16"/>
                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                     <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="pure black/white" id="ayz-p2-XC5">
                                                         <font key="font" metaFont="system"/>
