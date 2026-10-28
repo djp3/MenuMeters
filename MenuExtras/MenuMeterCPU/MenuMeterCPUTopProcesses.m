@@ -56,7 +56,7 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     NSArray*processes;
     NSTask*task;
     NSPipe*pipe;
-    NSString*buffer;
+    NSMutableData*buffer;
     int parseState; //0 is before the first PID, COMMAND ... ; 1 is just after it saw PID, ...
     NSMutableArray*tempArray;
 }
@@ -78,13 +78,18 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     }
     NSData*d=[n userInfo][@"NSFileHandleNotificationDataItem"];
     if([d length]){
-        NSString*s=[[NSString alloc] initWithData:d encoding:NSUTF8StringEncoding];
-        buffer=[buffer  stringByAppendingString:s];
-        while([buffer containsString:@"\n"]){
-            NSUInteger i=[buffer rangeOfString:@"\n"].location;
-            NSString*x=[buffer substringToIndex:i];
-            [self dealWithLine:x];
-            buffer=[buffer substringFromIndex:i+1];
+        [buffer appendData:d];
+        // Only complete lines are decoded, so a multibyte character split across two reads stays whole
+        NSData*newline=[NSData dataWithBytes:"\n" length:1];
+        NSRange found;
+        while((found=[buffer rangeOfData:newline options:0 range:NSMakeRange(0,buffer.length)]).location!=NSNotFound){
+            NSData*lineData=[buffer subdataWithRange:NSMakeRange(0,found.location)];
+            NSString*line=[[NSString alloc] initWithData:lineData encoding:NSUTF8StringEncoding];
+            if(!line){
+                line=[[NSString alloc] initWithData:lineData encoding:NSISOLatin1StringEncoding];
+            }
+            [self dealWithLine:line];
+            [buffer replaceBytesInRange:NSMakeRange(0,found.location+1) withBytes:NULL length:0];
         }
         [fh readInBackgroundAndNotifyForModes:@[NSRunLoopCommonModes]];
     }
@@ -92,7 +97,7 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
     
 - (void)startUpdateProcessList {
     parseState=0;
-    buffer=[NSString string];
+    buffer=[NSMutableData data];
     task = [NSTask new];
     task.launchPath = @"/usr/bin/top";
     task.arguments =[[NSString stringWithFormat:@"-s 1 -l 0 -stats pid,cpu,uid,user,command -o cpu -n %@",  @(kCPUrocessCountMax)] componentsSeparatedByString:@" "];
@@ -135,6 +140,9 @@ NSString* const kProcessListItemCPUKey           = @"cpuPercent";
         if(![i isEqualToString:@""]){
             [x addObject:i];
         }
+    }
+    if(x.count<5){
+        return;
     }
     NSArray*commandName=[x subarrayWithRange:NSMakeRange(4,x.count-4)];
     NSDictionary* entry = @{ kProcessListItemPIDKey:x[0],
