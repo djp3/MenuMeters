@@ -358,6 +358,13 @@
 							[localizedStrings objectForKey:kSingleEncryptedSwapFormat]),
 						[prettyIntFormatter stringForObjectValue:[currentSwapStats objectForKey:@"swapcount"]],
 						[currentSwapStats objectForKey:@"swappath"]];
+	} else {
+		title = [NSString stringWithFormat:
+						(([[currentSwapStats objectForKey:@"swapcount"] unsignedIntValue] != 1) ?
+							[localizedStrings objectForKey:kMultiSwapFormat] :
+							[localizedStrings objectForKey:kSingleSwapFormat]),
+						[prettyIntFormatter stringForObjectValue:[currentSwapStats objectForKey:@"swapcount"]],
+						[currentSwapStats objectForKey:@"swappath"]];
 	}
 	LiveUpdateMenuItemTitle(extraMenu, kMemSwapCountInfoMenuIndex, title);
 	// Swap max
