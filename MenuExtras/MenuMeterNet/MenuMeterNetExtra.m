@@ -851,7 +851,7 @@
 	}
 
 	// Draw
-	if (![preferredInterfaceConfig objectForKey:@"interfaceup"]) {
+	if (![[preferredInterfaceConfig objectForKey:@"interfaceup"] boolValue]) {
 		[inactiveColor set];
 		[topPath fill];
 		[bottomPath fill];
