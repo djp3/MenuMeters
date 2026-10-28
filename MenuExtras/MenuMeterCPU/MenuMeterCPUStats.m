@@ -265,7 +265,7 @@ uint32_t packageCount;
 		if (processorTickInfo[i].cpu_ticks[CPU_STATE_USER] >= priorCPUTicks[i].cpu_ticks[CPU_STATE_USER]) {
 			user = processorTickInfo[i].cpu_ticks[CPU_STATE_USER] - priorCPUTicks[i].cpu_ticks[CPU_STATE_USER];
 		} else {
-			user = processorTickInfo[i].cpu_ticks[CPU_STATE_USER] + (ULONG_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_USER] + 1);
+			user = processorTickInfo[i].cpu_ticks[CPU_STATE_USER] + (UINT_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_USER] + 1);
 		}
 		// Count nice as user (nice slot non-zero only on  OS versions prior to 10.4)
 		// Radar 5644966, duplicate 5555821. Apple says its intentional, so stop
@@ -273,12 +273,12 @@ uint32_t packageCount;
 		if (processorTickInfo[i].cpu_ticks[CPU_STATE_NICE] >= priorCPUTicks[i].cpu_ticks[CPU_STATE_NICE]) {
 			user += processorTickInfo[i].cpu_ticks[CPU_STATE_NICE] - priorCPUTicks[i].cpu_ticks[CPU_STATE_NICE];
 		} else {
-			user += processorTickInfo[i].cpu_ticks[CPU_STATE_NICE] + (ULONG_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_NICE] + 1);
+			user += processorTickInfo[i].cpu_ticks[CPU_STATE_NICE] + (UINT_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_NICE] + 1);
 		}
 		if (processorTickInfo[i].cpu_ticks[CPU_STATE_IDLE] >= priorCPUTicks[i].cpu_ticks[CPU_STATE_IDLE]) {
 			idle = processorTickInfo[i].cpu_ticks[CPU_STATE_IDLE] - priorCPUTicks[i].cpu_ticks[CPU_STATE_IDLE];
 		} else {
-			idle = processorTickInfo[i].cpu_ticks[CPU_STATE_IDLE] + (ULONG_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_IDLE] + 1);
+			idle = processorTickInfo[i].cpu_ticks[CPU_STATE_IDLE] + (UINT_MAX - priorCPUTicks[i].cpu_ticks[CPU_STATE_IDLE] + 1);
 		}
 		total = system + user + idle;
 
