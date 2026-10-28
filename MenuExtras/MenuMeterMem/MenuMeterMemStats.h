@@ -37,6 +37,8 @@
 	mach_port_t				selfHost;
 	// Total RAM
 	uint64_t				totalRAM;
+	// Installed RAM, from hw.memsize
+	uint64_t				physicalRAM;
 	// Tiger or later?
 	BOOL					isTigerOrLater;
 	// Mavericks or later?
