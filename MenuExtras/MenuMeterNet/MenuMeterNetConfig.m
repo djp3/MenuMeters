@@ -22,6 +22,7 @@
 //
 
 #import "MenuMeterNetConfig.h"
+#import <CoreWLAN/CoreWLAN.h>
 
 
 ///////////////////////////////////////////////////////////////
@@ -617,43 +618,47 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 }
 
 - (NSNumber *)speedForInterfaceName:(NSString*)bsdInterface{
-    {
-        NSDictionary* airportDict=[self sysconfigValueForKey:[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort",bsdInterface]];
-        if(airportDict){
-            NSNumber* x = [self speedForAirport];
-            if(x){
-                return x;
-            }
-        }
-    }
-    {
-        NSNumber* x=[self speedForInterfaceNameViaIOKit:bsdInterface];
-        if(x){
-            return x;
-        }
-    }
-    {
-        NSNumber* x=[self speedForInterfaceNameViaIfConfig:bsdInterface];
-        if(x){
-            return x;
-        }
-    }
-    return [NSNumber numberWithLong:kInterfaceDefaultSpeed];
+
+	if (!bsdInterface) return [NSNumber numberWithLong:kInterfaceDefaultSpeed];
+
+	// Cache? The default for an unreadable speed is cached too, until the next network change
+	if ([cachedInterfaceSpeed objectForKey:bsdInterface]) {
+		return [cachedInterfaceSpeed objectForKey:bsdInterface];
+	} else if (!cachedInterfaceSpeed) {
+		cachedInterfaceSpeed = [NSMutableDictionary dictionary];
+	}
+
+	// Each source answers nil when it has no positive speed, so the next one is tried
+	NSNumber *speed = nil;
+	NSDictionary *airportDict = [self sysconfigValueForKey:[NSString stringWithFormat:@"Setup:/Network/Interface/%@/AirPort", bsdInterface]];
+	if (airportDict) {
+		speed = [self speedForAirportInterfaceName:bsdInterface];
+	}
+	if (!speed) {
+		speed = [self speedForInterfaceNameViaIOKit:bsdInterface];
+	}
+	if (!speed) {
+		speed = [self speedForInterfaceNameViaIfConfig:bsdInterface];
+	}
+	if (!speed) {
+		speed = [NSNumber numberWithLong:kInterfaceDefaultSpeed];
+	}
+	[cachedInterfaceSpeed setObject:speed forKey:bsdInterface];
+	return speed;
 }
-- (NSNumber*)speedForAirport
+- (NSNumber *)speedForAirportInterfaceName:(NSString *)bsdInterface
 {
-    NSString*line=[self runCommand:@"/System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/airport -I | grep maxRate"];
-    NSRange r=[line rangeOfString:@":"];
-    if(r.location==NSNotFound){
-        return nil;
-    }
-    line=[line substringFromIndex:r.location+1];
-    return [NSNumber numberWithDouble:[line doubleValue]*1000*1000];
+	// CoreWLAN reports the current transmit rate in megabits per second, or 0 when not associated
+	CWInterface *wifi = [[CWWiFiClient sharedWiFiClient] interfaceWithName:bsdInterface];
+	double megabitsPerSecond = wifi.transmitRate;
+	if (megabitsPerSecond > 0) {
+		return [NSNumber numberWithDouble:megabitsPerSecond * 1000 * 1000];
+	}
+	return nil;
 }
 - (NSNumber *)speedForInterfaceNameViaIfConfig:(NSString *)bsdInterface {
 
-	if (!bsdInterface) return [NSNumber numberWithLong:kInterfaceDefaultSpeed];
-    NSLog(@"getting the speed for %@",bsdInterface);
+	if (!bsdInterface) return nil;
     /* The old way to get the speed via IOKit no longer reliably works, most probably due to the slow move to DriverKit.
      The link speed as reported by NetworkUtility.app can also be obtained by ifconfig, whose source code is available at
      https://opensource.apple.com/source/network_cmds/network_cmds-596/ifconfig.tproj/
@@ -662,14 +667,14 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
      */
     NSString*line=[self runCommand:[NSString stringWithFormat:@"ifconfig -v %@ | egrep 'link rate|uplink'",bsdInterface]];
     if([line containsString:@"does not"]){
-         return [NSNumber numberWithLong:0];
+         return nil;
     }
     NSRange r=[line rangeOfString:@"/"];
     if(r.location==NSNotFound){
         r=[line rangeOfString:@": "];
     }
     if(r.location==NSNotFound){
-        return [NSNumber numberWithLong:0];
+        return nil;
     }
     line=[line substringFromIndex:r.location+1];
     double factor=1;
@@ -682,15 +687,19 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
     }else if((r=[line rangeOfString:@"bps"]).location!=NSNotFound){
         factor=1;
     }else{
-        factor=0;
+        return nil;
     }
     
     line=[line substringToIndex:r.location];
-    return [NSNumber numberWithDouble:[line doubleValue]*factor];
+    double speed=[line doubleValue]*factor;
+    if(speed<=0){
+        return nil;
+    }
+    return [NSNumber numberWithDouble:speed];
 }
 - (NSNumber *)speedForInterfaceNameViaIOKit:(NSString *)bsdInterface {
 	// Get the speed from IOKit
-	io_iterator_t iterator;
+	io_iterator_t iterator = 0;
 	IOServiceGetMatchingServices(masterPort,
 								 IOBSDNameMatching(masterPort, kNilOptions, [bsdInterface UTF8String]),
 								 &iterator);
@@ -701,14 +710,14 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 	io_registry_entry_t	regEntry = IOIteratorNext(iterator);
 	if (!regEntry) {
 		IOObjectRelease(iterator);
-		return [NSNumber numberWithLong:kInterfaceDefaultSpeed];
+		return nil;
 	}
 	io_object_t	controllerService = 0;
 	IORegistryEntryGetParentEntry(regEntry, kIOServicePlane, &controllerService);
 	if (!controllerService) {
 		IOObjectRelease(regEntry);
 		IOObjectRelease(iterator);
-		return [NSNumber numberWithLong:kInterfaceDefaultSpeed];
+		return nil;
 	}
 	NSNumber *linkSpeed = (NSNumber *)CFBridgingRelease(IORegistryEntryCreateCFProperty(controllerService,
 																						CFSTR(kIOLinkSpeed),
@@ -738,6 +747,7 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 	cachedServiceToName = nil;
 	cachedNameToService = nil;
 	cachedServiceSpeed = nil;
+	cachedInterfaceSpeed = nil;
 	cachedUnderlyingInterface = nil;
 	cachedInterfaceUp = nil;
 

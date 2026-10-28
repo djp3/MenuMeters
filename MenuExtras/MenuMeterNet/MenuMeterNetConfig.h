@@ -48,6 +48,7 @@
 	NSMutableDictionary			*cachedServiceToName;
 	NSMutableDictionary			*cachedNameToService;
 	NSMutableDictionary			*cachedServiceSpeed;
+	NSMutableDictionary			*cachedInterfaceSpeed;
 	NSMutableDictionary			*cachedUnderlyingInterface;
 	NSMutableDictionary			*cachedInterfaceUp;
 
