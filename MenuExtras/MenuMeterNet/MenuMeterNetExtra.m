@@ -1061,10 +1061,11 @@
 	// Get new config
 	preferredInterfaceConfig = [netConfig interfaceConfigForInterfaceName:[ourPrefs netPreferInterface]];
 
-	// Get interval for the sample
+	// Get interval for the sample from a clock that only moves forward
+	NSTimeInterval now = [[NSProcessInfo processInfo] systemUptime];
 	NSTimeInterval currentSampleInterval = [ourPrefs netInterval];
-	if (lastSampleDate) {
-		currentSampleInterval = -[lastSampleDate timeIntervalSinceNow];
+	if ((lastSampleTime > 0) && (now > lastSampleTime)) {
+		currentSampleInterval = now - lastSampleTime;
 	}
 
 	// Load new net data
@@ -1086,7 +1087,7 @@
 	[netHistoryIntervals addObject:[NSNumber numberWithDouble:currentSampleInterval]];
 
 	// Update for next sample
-	lastSampleDate = [NSDate date];
+	lastSampleTime = now;
     }
 	// If the menu is down force it to update
 	if (self.isMenuVisible) {
