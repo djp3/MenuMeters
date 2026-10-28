@@ -331,23 +331,22 @@
 			NSLog(@"MenuMeterDisk unable to get filesystem information for \"%@\".", [sender representedObject]);
 		}
 		// Have to eject/unmount the volume via diskutil because Carbon calls and NSWorkspace
-		// both got bizarrely slow in 10.4.x. Wrap in exception handling for NSTask errors,
-		// using old-school for 10.2 compatibility.
-		NS_DURING
-			if (removable) {
-				[[NSTask launchedTaskWithLaunchPath:@"/usr/sbin/diskutil"
-										 arguments:[NSArray arrayWithObjects:@"eject",
-														[sender representedObject],
-														nil]] waitUntilExit];
-			} else {
-				[[NSTask launchedTaskWithLaunchPath:@"/usr/sbin/diskutil"
-										 arguments:[NSArray arrayWithObjects:@"unmount",
-														[sender representedObject],
-														nil]] waitUntilExit];
+		// both got bizarrely slow in 10.4.x. diskutil can take seconds on a spinning
+		// drive, so it runs without holding up the menu bar.
+		NSString *volumePath = [sender representedObject];
+		NSTask *diskutil = [[NSTask alloc] init];
+		diskutil.launchPath = @"/usr/sbin/diskutil";
+		diskutil.arguments = @[(removable ? @"eject" : @"unmount"), volumePath];
+		diskutil.terminationHandler = ^(NSTask *finished) {
+			if (finished.terminationStatus != 0) {
+				NSLog(@"MenuMeterDisk unable to eject/unmount \"%@\" using diskutil.", volumePath);
 			}
-		NS_HANDLER
-			NSLog(@"MenuMeterDisk unable to eject/unmount \"%@\" using diskutil.", [sender representedObject]);
-		NS_ENDHANDLER
+		};
+		@try {
+			[diskutil launch];
+		} @catch (NSException *exception) {
+			NSLog(@"MenuMeterDisk unable to eject/unmount \"%@\" using diskutil.", volumePath);
+		}
 	} else {
 		if (![[NSWorkspace sharedWorkspace] openFile:[sender representedObject]]) {
 			NSLog(@"MenuMeterDisk unable to open \"%@\".", [sender representedObject]);
