@@ -41,7 +41,6 @@
 	// Info gatherers/controllers
 	MenuMeterNetConfig				*netConfig;
 	MenuMeterNetStats				*netStats;
-	MenuMeterNetPPP					*pppControl;
 	// Formatters for localization
 	NSNumberFormatter				*bytesFormatter, *prettyIntFormatter;
 	// Cached colors

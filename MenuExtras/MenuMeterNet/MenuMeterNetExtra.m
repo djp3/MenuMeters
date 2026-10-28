@@ -151,7 +151,6 @@
 	// Build our data gatherers
 	netConfig = [[MenuMeterNetConfig alloc] init];
 	netStats = [[MenuMeterNetStats alloc] init];
-	pppControl = [MenuMeterNetPPP sharedPPP];
 	netHistoryData = [NSMutableArray array];
 	netHistoryIntervals = [NSMutableArray array];
 	if (!(netConfig && netStats && netHistoryData)) {
