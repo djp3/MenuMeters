@@ -124,6 +124,8 @@ NSWindowController<NSWindowDelegate, NSToolbarDelegate, NSTabViewDelegate>
 	IBOutlet NSPopUpButton			*netGraphStyle;
 	IBOutlet NSTextField			*netGraphStyleLabel;
 	IBOutlet NSSlider				*netGraphWidth;
+	// General controls
+	IBOutlet NSButton				*launchAtLogin;
 	IBOutlet NSTextField			*netGraphWidthLabel;
 	IBOutlet NSColorWell			*netTxColor;
 	IBOutlet NSColorWell			*netRxColor;
@@ -150,5 +152,6 @@ NSWindowController<NSWindowDelegate, NSToolbarDelegate, NSTabViewDelegate>
 - (IBAction)diskPrefChange:(id)sender;
 - (IBAction)memPrefChange:(id)sender;
 - (IBAction)netPrefChange:(id)sender;
+- (IBAction)launchAtLoginChange:(id)sender;
 
 @end

@@ -9,6 +9,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="MenuMetersPref">
             <connections>
                 <outlet property="aboutView" destination="U5D-Mp-8pb" id="K8R-8s-GRK"/>
+                <outlet property="launchAtLogin" destination="lgn-At-Lg1" id="lgn-At-Lg4"/>
                 <outlet property="cpuGraph" destination="EKe-a8-Y3G" id="7v8-zm-U0A"/>
                 <outlet property="cpuGraphWidth" destination="172" id="179"/>
                 <outlet property="cpuGraphWidthLabel" destination="401" id="547"/>
@@ -1322,18 +1323,18 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <scrollView fixedFrame="YES" borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nf9-0N-sdX">
-                                            <rect key="frame" x="-3" y="120" width="554" height="483"/>
+                                            <rect key="frame" x="-3" y="152" width="554" height="451"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <clipView key="contentView" drawsBackground="NO" copiesOnScroll="NO" id="U9X-wn-4af">
-                                                <rect key="frame" x="0.0" y="0.0" width="554" height="483"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="554" height="451"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <subviews>
                                                     <textView importsGraphics="NO" richText="NO" verticallyResizable="YES" spellingCorrection="YES" smartInsertDelete="YES" id="U5D-Mp-8pb">
-                                                        <rect key="frame" x="0.0" y="0.0" width="554" height="483"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="554" height="451"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                        <size key="minSize" width="554" height="483"/>
+                                                        <size key="minSize" width="554" height="451"/>
                                                         <size key="maxSize" width="560" height="10000000"/>
                                                         <color key="insertionPointColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                                     </textView>
@@ -1344,10 +1345,21 @@
                                                 <autoresizingMask key="autoresizingMask"/>
                                             </scroller>
                                             <scroller key="verticalScroller" wantsLayer="YES" verticalHuggingPriority="750" horizontal="NO" id="acX-Ld-w1b">
-                                                <rect key="frame" x="538" y="0.0" width="16" height="483"/>
+                                                <rect key="frame" x="538" y="0.0" width="16" height="451"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                             </scroller>
                                         </scrollView>
+                                        <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lgn-At-Lg1">
+                                            <rect key="frame" x="14" y="127" width="400" height="18"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="check" title="Start MenuMeters at login" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="lgn-At-Lg2">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="launchAtLoginChange:" target="-2" id="lgn-At-Lg3"/>
+                                            </connections>
+                                        </button>
                                         <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="d2S-NP-QJd" userLabel="Sparkle UI Container">
                                             <rect key="frame" x="-3" y="-3" width="554" height="125"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
