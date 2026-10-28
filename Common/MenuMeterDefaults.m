@@ -703,10 +703,15 @@
 
 - (NSColor *)loadColorPref:(NSString *)prefName defaultValue:(NSColor *)defaultValue {
 
-    NSData* data = [[NSUserDefaults standardUserDefaults] objectForKey:prefName];
-    if(data){
-        NSColor*color=[NSUnarchiver unarchiveObjectWithData:data];
-        if(color){
+    id stored = [[NSUserDefaults standardUserDefaults] objectForKey:prefName];
+    if([stored isKindOfClass:[NSData class]]){
+        NSColor*color=nil;
+        @try {
+            color=[NSUnarchiver unarchiveObjectWithData:stored];
+        } @catch (NSException *exception) {
+            color=nil;
+        }
+        if([color isKindOfClass:[NSColor class]]){
             return color;
         }
 	}
@@ -721,9 +726,9 @@
 
 - (NSString *)loadStringPref:(NSString *)prefName defaultValue:(NSString *)defaultValue {
 
-    NSString*s=[[NSUserDefaults standardUserDefaults] objectForKey:prefName];
-    if(s){
-        return s;
+    id stored=[[NSUserDefaults standardUserDefaults] objectForKey:prefName];
+    if([stored isKindOfClass:[NSString class]]){
+        return stored;
     }
     return defaultValue;
 } // _loadStringPref
