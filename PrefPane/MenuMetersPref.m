@@ -227,6 +227,8 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 -(void)hiddenBySystem:(NSNotification*)notification
 {
     NSRunningApplication*app=[[NSWorkspace sharedWorkspace] frontmostApplication];
+    if(!app.bundleIdentifier)
+        return;
     if([app.bundleIdentifier isEqualToString:[NSBundle mainBundle].bundleIdentifier])
         return;
     NSArray*array=[[NSUserDefaults standardUserDefaults] objectForKey:@"hiddenArray"];
