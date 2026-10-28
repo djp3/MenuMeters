@@ -120,6 +120,12 @@ static host_statistics64_Ptr host_statistics64_Impl = NULL;
 		return nil;
 	}
 
+	// Installed memory, which the page counts never add up to exactly
+	size_t memsizeLength = sizeof(physicalRAM);
+	if (sysctlbyname("hw.memsize", &physicalRAM, &memsizeLength, NULL, 0) != 0) {
+		physicalRAM = 0;
+	}
+
 	// Paging indicator patch contributed by Bernhard Baehr.
 	// Initialize lastpageins and lastpageouts
 	[self memStats];
@@ -239,16 +245,23 @@ static host_statistics64_Ptr host_statistics64_Impl = NULL;
 	lastPageIn = vmStats64.pageins;
 	lastPageOut = vmStats64.pageouts;
 
-	// Memory page statistics
-	uint64_t active = vmStats64.active_count * vm_page_size;
-	uint64_t inactive = vmStats64.inactive_count * vm_page_size;
-	uint64_t wired = vmStats64.wire_count * vm_page_size;
-	uint64_t free = vmStats64.free_count * vm_page_size;
-	uint64_t compressed = vmStats64.compressor_page_count * vm_page_size;
-	uint64_t uncompressed = vmStats64.total_uncompressed_pages_in_compressor * vm_page_size;
+	// Memory page statistics, in the kernel's page size, which differs from
+	// the process's own under Rosetta
+	uint64_t active = vmStats64.active_count * vm_kernel_page_size;
+	uint64_t inactive = vmStats64.inactive_count * vm_kernel_page_size;
+	uint64_t wired = vmStats64.wire_count * vm_kernel_page_size;
+	uint64_t free = vmStats64.free_count * vm_kernel_page_size;
+	uint64_t compressed = vmStats64.compressor_page_count * vm_kernel_page_size;
+	uint64_t uncompressed = vmStats64.total_uncompressed_pages_in_compressor * vm_kernel_page_size;
 
-	// Update total
-	totalRAM = active + inactive + wired + free + compressed;
+	// The total is the installed memory. Pages outside the four categories shown,
+	// such as speculative ones, count as free, so the categories add up to the total.
+	if (physicalRAM > active + inactive + wired + compressed) {
+		totalRAM = physicalRAM;
+		free = physicalRAM - (active + inactive + wired + compressed);
+	} else {
+		totalRAM = active + inactive + wired + free + compressed;
+	}
 
 	int memory_pressure_level = 0;
 	size_t length = sizeof(memory_pressure_level);
