@@ -993,8 +993,9 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 			}
 		}
 		if (!foundBetterItem) {
+			// The chosen service is not present right now; the popup shows the primary
+			// interface meanwhile and the choice itself is kept for when it returns
 			[netPreferInterface selectItemAtIndex:0];
-			[ourPrefs saveNetPreferInterface:kNetPrimaryInterface];
 		}
 	}
 
@@ -1049,10 +1050,8 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 
 - (void)loadExtraAtURL:(NSURL *)extraURL withID:(NSString *)bundleID {
 #ifdef ELCAPITAN
+    // The caller notifies the extra once it has saved the rest of the pane's settings
     [ourPrefs saveBoolPref:bundleID value:YES];
-    [[NSNotificationCenter defaultCenter] postNotificationName:bundleID
-                                                                   object:kPrefChangeNotification
-                                                                 userInfo:nil];
     return;
 #else
 	// Load the crack. With MenuCracker 2.x multiple loads are allowed, so
