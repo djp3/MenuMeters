@@ -136,8 +136,15 @@ static id gSharedPPP = nil;
 		return nil;
 	}
 
-	// Establish or connection to the PPP socket
+	// Establish or connection to the PPP socket. Writing to it after pppconfd
+	// has gone must fail with an error, not end the process with SIGPIPE.
 	pppconfdSocket = socket(AF_LOCAL, SOCK_STREAM, 0);
+	if (pppconfdSocket < 0) {
+		NSLog(@"MenuMeterNetPPP unable to create socket for pppconfd. Abort.");
+		return nil;
+	}
+	int noSigPipe = 1;
+	setsockopt(pppconfdSocket, SOL_SOCKET, SO_NOSIGPIPE, &noSigPipe, sizeof(noSigPipe));
 	struct sockaddr_un socketaddr = { 0, AF_LOCAL, kPPPSocketPath };
 	if (connect(pppconfdSocket, (struct sockaddr *)&socketaddr, (socklen_t)sizeof(socketaddr))) {
 		NSLog(@"MenuMeterNetPPP unable to establish socket for pppconfd. Abort.");
@@ -332,18 +339,24 @@ static id gSharedPPP = nil;
 
 - (NSData *)pppconfdExecMessage:(NSData *)message {
 
-	// Write the data
-	[pppconfdHandle writeData:message];
-	// Read back the reply headers
-	NSData *header = [pppconfdHandle readDataOfLength:sizeof(struct ppp_msg_hdr)];
-	if ([header length]) {
-		struct ppp_msg_hdr *header_message = (struct ppp_msg_hdr *)[header bytes];
-		if (header_message && header_message->m_len) {
-			NSData *reply = [pppconfdHandle readDataOfLength:header_message->m_len];
-			if ([reply length] && !header_message->m_result) {
-				return reply;
+	@try {
+		// Write the data
+		[pppconfdHandle writeData:message];
+		// Read back the reply headers, which must be complete before they are used
+		NSData *header = [pppconfdHandle readDataOfLength:sizeof(struct ppp_msg_hdr)];
+		if ([header length] == sizeof(struct ppp_msg_hdr)) {
+			const struct ppp_msg_hdr *header_message = (const struct ppp_msg_hdr *)[header bytes];
+			if (header_message->m_len) {
+				NSData *reply = [pppconfdHandle readDataOfLength:header_message->m_len];
+				if (([reply length] == header_message->m_len) && !header_message->m_result) {
+					return reply;
+				}
 			}
 		}
+	} @catch (NSException *exception) {
+		// pppconfd has closed the connection; nothing more is asked of it
+		NSLog(@"MenuMeterNetPPP lost the connection to pppconfd: %@", exception.reason);
+		pppconfdHandle = nil;
 	}
 
 	// Get here we got nothing
