@@ -94,17 +94,16 @@ uint32_t packageCount;
 		return nil;
 	}
 
-	// Gather the clock rate string
+	// Gather the clock rate string, when the system reports a clock rate
     uint32_t clockRate = [self clockFrequency];
     if (clockRate > 1000000000) {
         clockSpeed = [NSString stringWithFormat:@"%@GHz",
                             [twoDigitFloatFormatter stringForObjectValue:
                                 [NSNumber numberWithFloat:(float)clockRate / 1000000000]]];
-    } else {
+    } else if (clockRate > 0) {
         clockSpeed = [NSString stringWithFormat:@"%dMHz", clockRate / 1000000];
-    }
-    if (!clockSpeed) {
-        return nil;
+    } else {
+        clockSpeed = nil;
     }
 
 	// Gather the cpu count
@@ -192,6 +191,9 @@ uint32_t packageCount;
     }
 }
 - (NSString *)processorDescription {
+	if (!clockSpeed) {
+		return [NSString stringWithFormat:@"%@%@", [self packages], [self cpuName]];
+	}
 	return [NSString stringWithFormat:@"%@%@ @ %@", [self packages], [self cpuName], [self cpuSpeed]];
 } // processorDescription
 - (NSString *)coreDescription {
@@ -401,30 +403,16 @@ uint32_t packageCount;
 } // _cpuPrettyName
 
 - (UInt32) clockFrequency {
+    // The clock rate in Hz, or 0 when the system does not report one.
+    // Intel Macs report hw.cpufrequency; Apple silicon publishes no CPU clock.
     uint32_t clockRate = 0;
-
-    // First try with sysctl
     int mib[2] = { CTL_HW, HW_CPU_FREQ };
     size_t sysctlLength = sizeof(clockRate);
-    int res = sysctl(mib, 2, &clockRate, &sysctlLength, NULL, 0);
-
-    // Try using IOKit
-    if (res != 0) {
-        mach_port_t platformExpertDevice = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
-        CFTypeRef platformClockFrequency = IORegistryEntryCreateCFProperty(platformExpertDevice, CFSTR("clock-frequency"), kCFAllocatorDefault, 0);
-        if (CFGetTypeID(platformClockFrequency) == CFDataGetTypeID()) {
-            const CFDataRef platformClockFrequencyData = (const CFDataRef) platformClockFrequency;
-            const UInt8* clockFreqBytes = CFDataGetBytePtr(platformClockFrequencyData);
-            clockRate = CFSwapInt32BigToHost(*(UInt32*)(clockFreqBytes)) * 1000;
-        }
-        if(platformClockFrequency)
-            CFRelease(platformClockFrequency);
-        if(platformExpertDevice)
-            IOObjectRelease(platformExpertDevice);
+    if (sysctl(mib, 2, &clockRate, &sysctlLength, NULL, 0) != 0) {
+        return 0;
     }
-
     return clockRate;
-} // getClockFrequency
+} // clockFrequency
 - (NSString*)cpuPowerLimitStatus
 {
     CFDictionaryRef dic=NULL;
