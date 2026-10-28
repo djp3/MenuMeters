@@ -104,12 +104,16 @@ static NSComparisonResult SortDiskEntryByDeviceString(NSDictionary *a, NSDiction
 	// backwards compatible as possible)
 	// Really this whole thing should be rewritten using DiskArbitration, but
 	// that would force too new an OS version.
+	// The mount list is taken as the kernel has it, so an unreachable network
+	// share cannot hold the menu up; the local volumes shown are then asked afresh.
 	struct statfs *mountInfo;
-	int mountCount = getmntinfo(&mountInfo, MNT_WAIT);
+	int mountCount = getmntinfo(&mountInfo, MNT_NOWAIT);
 
 	// Loop the local mounts
 	NSMutableArray *diskSpaceDetails = [NSMutableArray array];
 	for (int i = 0; i < mountCount; i++) {
+		// Volumes the Finder keeps out of sight, such as the system's own, stay out of sight here
+		if (mountInfo[i].f_flags & MNT_DONTBROWSE) continue;
 		// We only view local volumes, which isn't easy (are FUSE volumes local?)
 		// Just look at filesystem type.
 		if(!strcmp(mountInfo[i].f_fstypename, "hfs") ||
@@ -124,6 +128,13 @@ static NSComparisonResult SortDiskEntryByDeviceString(NSDictionary *a, NSDiction
 
 			// Build the dictionary, start with 6 items (name, path, icon, free, used, total)
 			NSMutableDictionary *diskStats = [NSMutableDictionary dictionary];
+
+			// Current space counts for this volume
+			struct statfs freshInfo;
+			const struct statfs *volumeInfo = &mountInfo[i];
+			if (statfs(mountInfo[i].f_mntonname, &freshInfo) == 0) {
+				volumeInfo = &freshInfo;
+			}
 
 			// Build a NSString from the path
 			NSString *mountPath = [[NSFileManager defaultManager]
@@ -173,14 +184,14 @@ static NSComparisonResult SortDiskEntryByDeviceString(NSDictionary *a, NSDiction
 
 			// Store
 			[diskStats setObject:[NSString stringWithFormat:[localizedStrings objectForKey:kTotalSpaceFormat],
-									[self spaceString:((float)mountInfo[i].f_blocks * (float)mountInfo[i].f_bsize)]]
+									[self spaceString:((float)volumeInfo->f_blocks * (float)volumeInfo->f_bsize)]]
 						  forKey:@"total"];
 			[diskStats setObject:[NSString stringWithFormat:[localizedStrings objectForKey:kFreeSpaceFormat],
-									[self spaceString:((float)mountInfo[i].f_bavail * (float)mountInfo[i].f_bsize)]]
+									[self spaceString:((float)volumeInfo->f_bavail * (float)volumeInfo->f_bsize)]]
 						  forKey:@"free"];
 			[diskStats setObject:[NSString stringWithFormat:[localizedStrings objectForKey:kUsedSpaceFormat],
-									[self spaceString:(((float)mountInfo[i].f_blocks -
-														(float)mountInfo[i].f_bavail) * (float)mountInfo[i].f_bsize)]]
+									[self spaceString:(((float)volumeInfo->f_blocks -
+														(float)volumeInfo->f_bavail) * (float)volumeInfo->f_bsize)]]
 						  forKey:@"used"];
 			// Store the data into the array
 			[diskSpaceDetails addObject:diskStats];
