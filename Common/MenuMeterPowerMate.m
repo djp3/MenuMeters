@@ -433,8 +433,9 @@ static void DeviceTerminated(void *ref, io_iterator_t iterator) {
 		return;
 	}
 
-	// We have a device
+	// We have a device; the device interface holds its own reference to the service
 	devicePresent = YES;
+	IOObjectRelease(pmDevice);
 
 } // _deviceMatched:
 
