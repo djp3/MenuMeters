@@ -722,7 +722,7 @@
 		case kNetScalePeakTraffic:
 			if (![preferredInterfaceConfig objectForKey:@"statname"]) break;
 			if (![netHistoryData count]) break;
-			NSDictionary *primaryStats = [[netHistoryData objectAtIndex:0]
+			NSDictionary *primaryStats = [[netHistoryData lastObject]
 										  objectForKey:[preferredInterfaceConfig objectForKey:@"statname"]];
 			if (![primaryStats objectForKey:@"peak"]) break;
 			scaleFactor = [[primaryStats objectForKey:@"peak"] floatValue];
@@ -882,7 +882,7 @@
 		case kNetScalePeakTraffic:
 			if (![preferredInterfaceConfig objectForKey:@"statname"]) break;
 			if (![netHistoryData count]) break;
-			NSDictionary *primaryStats = [[netHistoryData objectAtIndex:0]
+			NSDictionary *primaryStats = [[netHistoryData lastObject]
 										  objectForKey:[preferredInterfaceConfig objectForKey:@"statname"]];
 			if (![primaryStats objectForKey:@"peak"]) break;
 			scaleFactor = [[primaryStats objectForKey:@"peak"] floatValue];
