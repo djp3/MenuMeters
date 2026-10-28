@@ -55,7 +55,10 @@
         NSComparisonResult r=[version compare:thisVersion options:NSNumericSearch];
 #endif
         NSLog(@"vers: running is %@, ours is %@, compare result was %ld", version, thisVersion, r);
-        if(r!=NSOrderedDescending){
+        // An older copy is terminated; of two copies of the same version, only the one launched earlier is
+        BOOL sameVersionLaunchedEarlier=(r==NSOrderedSame) &&
+            ([x.launchDate compare:NSRunningApplication.currentApplication.launchDate]==NSOrderedAscending);
+        if(r==NSOrderedAscending || sameVersionLaunchedEarlier){
             NSLog(@"version %@ already running, which is equal or older than this binary %@. Going to kill it.",version,thisVersion);
             [x terminate];
         }
