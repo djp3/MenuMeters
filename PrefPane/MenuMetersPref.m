@@ -23,6 +23,7 @@
 
 #import "MenuMetersPref.h"
 #import "EMCLoginItem.h"
+#import <ServiceManagement/ServiceManagement.h>
 #import "MenuMeterCPUExtra.h"
 #import "MenuMeterDiskExtra.h"
 #import "MenuMeterMemExtra.h"
@@ -284,6 +285,11 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 -(NSBundle*)bundle{
     return [NSBundle mainBundle];
 }
+-(void)windowDidBecomeKey:(NSNotification *)notification
+{
+    // The login item can be switched off in System Settings while MenuMeters runs
+    [launchAtLogin setState:([self launchesAtLogin] ? NSOnState : NSOffState)];
+}
 -(void)windowWillClose:(NSNotification *)notification
 {
     if(![self noMenuMeterLoaded]){
@@ -380,28 +386,81 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
     // because I forgot to include the image files in the new target.
     // Now they are eliminated from the code too ...
     
-    {
-    NSString*oldAppPath=[@"~/Library/PreferencePanes/MenuMeters.prefPane/Contents/Resources/MenuMetersApp.app" stringByExpandingTildeInPath];
-        EMCLoginItem*oldItem=[EMCLoginItem loginItemWithPath:oldAppPath];
-        if(oldItem.isLoginItem){
-            [oldItem removeLoginItem];
-        }
-    }
-    {
-        NSString*oldAppPath=@"/Library/PreferencePanes/MenuMeters.prefPane/Contents/Resources/MenuMetersApp.app";
-            EMCLoginItem*oldItem=[EMCLoginItem loginItemWithPath:oldAppPath];
-            if(oldItem.isLoginItem){
-                [oldItem removeLoginItem];
-            }
-    }
-    system("killall MenuMetersApp");
-    {
-        EMCLoginItem*thisItem=[EMCLoginItem loginItemWithBundle:[NSBundle mainBundle]];
-        if(!thisItem.isLoginItem){
-            [thisItem addLoginItem];
-        }
-    }
+    [self configureLoginItemAtFirstLaunch];
 } // mainViewDidLoad
+
+///////////////////////////////////////////////////////////////
+//
+//	Login item
+//
+///////////////////////////////////////////////////////////////
+
+// Set once the login item has been arranged, so later launches leave the
+// choice to the checkbox and to System Settings
+#define kLoginItemConfiguredPref @"LoginItemConfigured"
+
+- (BOOL)launchesAtLogin {
+	if (@available(macOS 13.0, *)) {
+		return [SMAppService mainAppService].status == SMAppServiceStatusEnabled;
+	}
+	return [EMCLoginItem loginItemWithBundle:[NSBundle mainBundle]].isLoginItem;
+}
+
+- (void)setLaunchesAtLogin:(BOOL)enabled {
+	if (@available(macOS 13.0, *)) {
+		SMAppService *service = [SMAppService mainAppService];
+		NSError *error = nil;
+		BOOL done = enabled ? [service registerAndReturnError:&error] : [service unregisterAndReturnError:&error];
+		if (!done) {
+			NSLog(@"MenuMeters could not %@ its login item: %@", enabled ? @"register" : @"unregister", error);
+		}
+		// A login item switched off in System Settings can only be switched on again there
+		if (enabled && (service.status == SMAppServiceStatusRequiresApproval)) {
+			[SMAppService openSystemSettingsLoginItems];
+		}
+		return;
+	}
+	EMCLoginItem *thisItem = [EMCLoginItem loginItemWithBundle:[NSBundle mainBundle]];
+	if (enabled && !thisItem.isLoginItem) {
+		[thisItem addLoginItem];
+	} else if (!enabled && thisItem.isLoginItem) {
+		[thisItem removeLoginItem];
+	}
+}
+
+- (void)configureLoginItemAtFirstLaunch {
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	if ([defaults boolForKey:kLoginItemConfiguredPref]) {
+		return;
+	}
+
+	// Login items left by the preference-pane era, and the helper app they launched
+	NSArray *oldAppPaths = @[[@"~/Library/PreferencePanes/MenuMeters.prefPane/Contents/Resources/MenuMetersApp.app" stringByExpandingTildeInPath],
+							 @"/Library/PreferencePanes/MenuMeters.prefPane/Contents/Resources/MenuMetersApp.app"];
+	for (NSString *oldAppPath in oldAppPaths) {
+		EMCLoginItem *oldItem = [EMCLoginItem loginItemWithPath:oldAppPath];
+		if (oldItem.isLoginItem) {
+			[oldItem removeLoginItem];
+		}
+	}
+	system("killall MenuMetersApp");
+
+	// MenuMeters starts at login by default. On macOS 13 and later an entry made by
+	// earlier versions moves over to the login item the system manages.
+	if (@available(macOS 13.0, *)) {
+		EMCLoginItem *thisItem = [EMCLoginItem loginItemWithBundle:[NSBundle mainBundle]];
+		if (thisItem.isLoginItem) {
+			[thisItem removeLoginItem];
+		}
+	}
+	[self setLaunchesAtLogin:YES];
+	[defaults setBool:YES forKey:kLoginItemConfiguredPref];
+}
+
+- (IBAction)launchAtLoginChange:(id)sender {
+	[self setLaunchesAtLogin:([launchAtLogin state] == NSOnState)];
+	[launchAtLogin setState:([self launchesAtLogin] ? NSOnState : NSOffState)];
+}
 
 - (void)updateTemperatureSensors
 {
@@ -451,6 +510,7 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 	[diskMeterToggle setState:([self isExtraWithBundleIDLoaded:kDiskMenuBundleID] ? NSOnState : NSOffState)];
 	[memMeterToggle setState:([self isExtraWithBundleIDLoaded:kMemMenuBundleID] ? NSOnState : NSOffState)];
 	[netMeterToggle setState:([self isExtraWithBundleIDLoaded:kNetMenuBundleID] ? NSOnState : NSOffState)];
+	[launchAtLogin setState:([self launchesAtLogin] ? NSOnState : NSOffState)];
 
 	// Build the preferred interface menu and select (this actually updates the net prefs too)
 	[self updateNetInterfaceMenu];
