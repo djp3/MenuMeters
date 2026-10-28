@@ -44,6 +44,7 @@
 	NSImage							*idleImageLight, *readImageLight, *writeImageLight, *readwriteImageLight;
     NSImage                         *idleImageDark, *readImageDark, *writeImageDark, *readwriteImageDark;
 	DiskIOActivityType				displayedActivity;
+	BOOL displayedIsDark;
 	// Theme support
 	NSColor							*fgMenuThemeColor;
 
