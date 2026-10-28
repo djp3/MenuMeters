@@ -250,12 +250,12 @@ static host_statistics64_Ptr host_statistics64_Impl = NULL;
 	// Update total
 	totalRAM = active + inactive + wired + free + compressed;
 
-  int memory_pressure_level;
-  size_t length = sizeof(int);
-  
-  sysctlbyname("kern.memorystatus_vm_pressure_level", &memory_pressure_level, &length, nil, 0);
-
-    int memory_pressure=[self memPressure];
+	int memory_pressure_level = 0;
+	size_t length = sizeof(memory_pressure_level);
+	if (sysctlbyname("kern.memorystatus_vm_pressure_level", &memory_pressure_level, &length, NULL, 0) != 0) {
+		memory_pressure_level = 0;
+	}
+	int memory_pressure = [self memPressure];
   
 	return [NSDictionary dictionaryWithObjectsAndKeys:
 				[NSNumber numberWithDouble:(double)totalRAM / 1048576], @"totalmb",
@@ -447,15 +447,17 @@ static host_statistics64_Ptr host_statistics64_Impl = NULL;
 
 - (int)memPressure
 {
+    // The share of memory under pressure, 0 to 100. The kernel reports the
+    // opposite, the system-wide free percentage, which is what Apple's
+    // memory_pressure tool prints from the same call.
     // taken from https://github.com/tramdas/memstatpoller/blob/38fbb15efc9b28db508d21ef557c89b4b29fd94e/main.c#L95
-    int error;
-    int level=0;
-    // This is how AAPL's memory_pressure tool reports "System-wide memory free percentage":
-    //error = memorystatus_get_level((user_addr_t) level);
-    error = syscall(SYS_memorystatus_get_level, &level);
-    if(error){
-        NSLog(@"memorystatus_get_level failed: error=%@ errorno=%@ (%s)",@(error),@(errno),strerror(errno));
+    int freePercent=0;
+    if(syscall(SYS_memorystatus_get_level, &freePercent)){
+        NSLog(@"memorystatus_get_level failed: errno=%@ (%s)",@(errno),strerror(errno));
+        return 0;
     }
-    return level;
+    if(freePercent<0) freePercent=0;
+    if(freePercent>100) freePercent=100;
+    return 100-freePercent;
 }
 @end
