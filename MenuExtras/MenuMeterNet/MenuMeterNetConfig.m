@@ -427,8 +427,9 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 
 	if (!interfaceName) return nil;
 
-	if ([cachedNameToService objectForKey:interfaceName]) {
-		return [cachedNameToService objectForKey:interfaceName];
+	id cachedService = [cachedNameToService objectForKey:interfaceName];
+	if (cachedService) {
+		return (cachedService == [NSNull null]) ? nil : cachedService;
 	} else if (!cachedNameToService) {
 		cachedNameToService = [NSMutableDictionary dictionary];
 	}
@@ -458,6 +459,8 @@ static void scChangeCallback(SCDynamicStoreRef store, CFArrayRef changedKeys, vo
 			return serviceID;
 		}
 	}
+	// A name with no service is remembered too, so it is not searched for again until the next network change
+	[cachedNameToService setObject:[NSNull null] forKey:interfaceName];
 	return nil;
 
 } // serviceForInterfaceName
