@@ -248,18 +248,19 @@
         // Calculate the minimum number of columns that will be needed
         uint32_t rowCount = [ourPrefs cpuHorizontalRows];
         //ceil(A/B) for ints is equal (A+B-1)/B
-        uint32_t columnCount = (cpuCount+rowCount-1)/rowCount;
-            //((cpuCount - 1) / [ourPrefs cpuHorizontalRows]) + 1;
+        // One thermometer per processor shown, laid out by its display index
+        uint32_t displayCount = (cpuCount+stride-1)/stride;
+        uint32_t columnCount = (displayCount+rowCount-1)/rowCount;
         // Calculate a column width
         float columnWidth = (menuWidth - 1.0f) / columnCount;
         // Image height
         float imageHeight = self.imageHeight;
         // Calculate a thermometer height
         float thermometerHeight = ((imageHeight - 2) / rowCount);
-        for (uint32_t cpuNum = 0; cpuNum < cpuCount; cpuNum+=stride) {
-            float xOffset = renderOffset + ((cpuNum / rowCount) * columnWidth) + 1.0f;
+        for (uint32_t cpuNum = 0, displayIndex = 0; cpuNum < cpuCount; cpuNum+=stride, displayIndex++) {
+            float xOffset = renderOffset + ((displayIndex / rowCount) * columnWidth) + 1.0f;
             float yOffset = (imageHeight -
-                             (((cpuNum % rowCount) + 1) * thermometerHeight)) - 1.0f;
+                             (((displayIndex % rowCount) + 1) * thermometerHeight)) - 1.0f;
             [self renderHorizontalThermometerForProcessor:cpuNum atX:xOffset andY:yOffset withWidth:columnWidth andHeight:thermometerHeight];
         }
     }
