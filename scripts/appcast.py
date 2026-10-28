@@ -5,8 +5,9 @@ Every MenuMeters-<version>.zip in the releases folder becomes one item. The vers
 build number and minimum system version come from the Info.plist inside the zip,
 the EdDSA signature and length from Sparkle's sign_update, the date from the zip's
 modification time, and the release notes from <notes folder>/<version>.md when
-that file exists. Items are listed newest build first. The version and build
-number sit on the enclosure, where Sparkle 1 reads them.
+that file exists. With --previous, the items of an earlier appcast are kept exactly
+as they are, except for versions that have a zip now. Items are listed newest build
+first. The version and build number sit on the enclosure, where Sparkle 1 reads them.
 """
 
 import argparse
@@ -21,6 +22,9 @@ import zipfile
 
 REPOSITORY = "https://github.com/djp3/MenuMeters"
 DEFAULT_SIGN_UPDATE = pathlib.Path.home() / "local/scripts/sparkle-2.9.5/sign_update"
+ITEM = re.compile(r"    <item>\n.*?\n    </item>", re.S)
+BUILD_ATTRIBUTE = re.compile(r'sparkle:version="([^"]+)"')
+VERSION_ATTRIBUTE = re.compile(r'sparkle:shortVersionString="([^"]+)"')
 
 
 def info_plist(zip_path):
@@ -31,10 +35,11 @@ def info_plist(zip_path):
 
 def signature(zip_path, sign_update):
     output = subprocess.run([str(sign_update), str(zip_path)], check=True, capture_output=True, text=True).stdout
-    return (
-        re.search(r'sparkle:edSignature="([^"]+)"', output).group(1),
-        re.search(r'length="(\d+)"', output).group(1),
-    )
+    ed_signature = re.search(r'sparkle:edSignature="([^"]+)"', output)
+    length = re.search(r'length="(\d+)"', output)
+    if not (ed_signature and length):
+        sys.exit(f"{sign_update} printed no signature for {zip_path}: {output.strip()!r}")
+    return ed_signature.group(1), length.group(1)
 
 
 def inline_html(text):
@@ -75,7 +80,9 @@ def notes_html(markdown):
     return "\n".join(output)
 
 
-def build_key(build):
+def build_key(build, source):
+    if not re.fullmatch(r"\d+(\.\d+)*", build):
+        sys.exit(f"{source}: build number {build!r} is not digits separated by dots")
     return tuple(int(part) for part in build.split("."))
 
 
@@ -99,12 +106,25 @@ def item(zip_path, sign_update, notes_dir):
       ]]></description>
       <enclosure url="{url}" length="{length}" type="application/octet-stream" sparkle:version="{build}" sparkle:shortVersionString="{version}" sparkle:edSignature="{ed_signature}"/>
     </item>"""
-    return build_key(build), xml
+    return build_key(build, zip_path), version, xml
+
+
+def previous_items(path):
+    """The items of an earlier appcast, each with its build key and version."""
+    items = []
+    for xml in ITEM.findall(path.read_text()):
+        build = BUILD_ATTRIBUTE.search(xml)
+        version = VERSION_ATTRIBUTE.search(xml)
+        if not (build and version):
+            sys.exit(f"{path}: an item has no sparkle:version or sparkle:shortVersionString")
+        items.append((build_key(build.group(1), path), version.group(1), xml))
+    return items
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("releases_dir", type=pathlib.Path, help="folder holding the MenuMeters-<version>.zip files")
+    parser.add_argument("--previous", type=pathlib.Path, help="an earlier appcast whose items are kept")
     parser.add_argument("--notes-dir", type=pathlib.Path, help="folder holding <version>.md release notes")
     parser.add_argument("--sign-update", type=pathlib.Path, default=DEFAULT_SIGN_UPDATE, help="Sparkle's sign_update tool")
     parser.add_argument("--output", type=pathlib.Path, help="where to write the appcast (default: standard output)")
@@ -113,7 +133,11 @@ def main():
     zips = sorted(args.releases_dir.glob("MenuMeters-*.zip"))
     if not zips:
         sys.exit(f"no MenuMeters-*.zip files in {args.releases_dir}")
-    items = sorted((item(z, args.sign_update, args.notes_dir) for z in zips), key=lambda pair: pair[0], reverse=True)
+    items = [item(z, args.sign_update, args.notes_dir) for z in zips]
+    rebuilt = {version for _, version, _ in items}
+    if args.previous:
+        items += [i for i in previous_items(args.previous) if i[1] not in rebuilt]
+    items.sort(key=lambda i: i[0], reverse=True)
 
     appcast = f"""<?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -122,7 +146,7 @@ def main():
     <link>{REPOSITORY}/releases</link>
     <description>Releases of the djp3 fork of MenuMeters.</description>
     <language>en</language>
-{chr(10).join(xml for _, xml in items)}
+{chr(10).join(xml for _, _, xml in items)}
   </channel>
 </rss>
 """

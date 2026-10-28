@@ -1,4 +1,4 @@
-# MenuMeters 2.1.6.2-djp3.1: fixed for macOS 27.2 (unofficial)
+# MenuMeters: fixed for macOS 27.2 (unofficial)
 
 This is an unofficial fork of [yujitach/MenuMeters](https://github.com/yujitach/MenuMeters), for one reason: MenuMeters 2.1.6.1 crashes at launch wherever `/var/run/pppconfd` is missing, the socket its network meter asked for PPP status. So far that's macOS 27.2, Sequoia 15.8.2 and a Sonoma beta ([yujitach/MenuMeters#324](https://github.com/yujitach/MenuMeters/issues/324), [#325](https://github.com/yujitach/MenuMeters/issues/325), [#326](https://github.com/yujitach/MenuMeters/issues/326), [#327](https://github.com/yujitach/MenuMeters/issues/327)).
 
@@ -22,7 +22,7 @@ The same fix is offered upstream as [yujitach/MenuMeters#328](https://github.com
 
 ## Download and install
 
-Download **MenuMeters-2.1.6.2-djp3.1.zip** under Assets on the [Releases](https://github.com/djp3/MenuMeters/releases) page (not "Source code"). The app is signed with a Developer ID and notarized by Apple, so it opens without warnings.
+Download the newest **MenuMeters-<version>.zip** under Assets on the [Releases](https://github.com/djp3/MenuMeters/releases) page (not "Source code"). The app is signed with a Developer ID and notarized by Apple, so it opens without warnings.
 
 1. Quit MenuMeters if it's in your menu bar.
 2. Double-click the zip to unzip it, if your browser hasn't already.

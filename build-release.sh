@@ -4,7 +4,8 @@
 #   ./build-release.sh                archives the "MenuMeters" scheme, signs the app with
 #                                     the Developer ID, notarizes and staples it, zips it
 #                                     with THIRD-PARTY-NOTICES.md, and writes the Sparkle
-#                                     appcast for every release so far, all into build/release
+#                                     appcast, the published feed's items plus this build,
+#                                     all into build/release
 #   ./build-release.sh --publish      all of the above, then tags v<version>, pushes the
 #                                     branch and the tag to the djp3 remote, and creates the
 #                                     GitHub release with the zip and the appcast attached
@@ -65,7 +66,9 @@ if [ $PUBLISH = yes ]; then
 	BRANCH=$(git rev-parse --abbrev-ref HEAD)
 	[ "$BRANCH" != HEAD ] || fail "check out a branch first; the release is pushed with its branch"
 	git remote get-url $REMOTE >/dev/null 2>&1 || fail "no git remote named $REMOTE"
-	! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || fail "tag $TAG already exists"
+	if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+		[ "$(git rev-parse "$TAG^{commit}")" = "$(git rev-parse HEAD)" ] || fail "tag $TAG already exists and points at another commit"
+	fi
 	gh auth status >/dev/null 2>&1 || fail "gh is not logged in to GitHub"
 	! gh release view "$TAG" -R $REPO >/dev/null 2>&1 || fail "release $TAG already exists on GitHub"
 fi
@@ -99,23 +102,26 @@ if [ $NOTARIZE = yes ]; then
 fi
 
 echo "==> Packaging $ZIP"
+rm -rf build/stage "$RELEASE_DIR"
 mkdir -p build/stage "$RELEASE_DIR"
 cp -R "$APP" build/stage/
 cp THIRD-PARTY-NOTICES.md build/stage/
-rm -f "$ZIP"
 ditto -c -k build/stage "$ZIP"
 
 echo "==> Writing the appcast"
-# Every published release is an item too, so the feed lists the whole history.
-gh release list -R $REPO --json tagName -q '.[].tagName' | while read -r tag; do
-	gh release download "$tag" -R $REPO -p 'MenuMeters-*.zip' -D "$RELEASE_DIR" --skip-existing \
-		|| echo "no MenuMeters-*.zip on release $tag; skipped"
-done
-python3 scripts/appcast.py "$RELEASE_DIR" --notes-dir release-notes --sign-update "$SIGN_UPDATE" --output "$APPCAST"
+# The published feed's items are kept as they are, so only this build is signed.
+PREVIOUS=build/previous-appcast.xml
+CODE=$(curl -sSL -o "$PREVIOUS" -w '%{http_code}' "$FEED") || fail "could not fetch $FEED"
+case $CODE in
+	200) PREVIOUS_OPTION="--previous $PREVIOUS" ;;
+	404) echo "no appcast at $FEED yet; this one starts the feed"; PREVIOUS_OPTION= ;;
+	*) fail "fetching $FEED returned HTTP $CODE" ;;
+esac
+python3 scripts/appcast.py "$RELEASE_DIR" $PREVIOUS_OPTION --notes-dir release-notes --sign-update "$SIGN_UPDATE" --output "$APPCAST"
 
 if [ $PUBLISH = yes ]; then
 	echo "==> Publishing $TAG to $REPO"
-	git tag -a "$TAG" -m "MenuMeters $VERSION"
+	git rev-parse -q --verify "refs/tags/$TAG" >/dev/null || git tag -a "$TAG" -m "MenuMeters $VERSION"
 	git push $REMOTE "$BRANCH" "$TAG"
 	{
 		cat "$NOTES"
