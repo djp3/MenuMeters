@@ -20,12 +20,16 @@
     dispatch_once(&once, ^{
 #if TARGET_CPU_X86_64
     if (kIOReturnSuccess == SMCOpen()) {
-        UInt32 count;
+        UInt32 count = 0;
         NSMutableArray*a=[NSMutableArray array];
-        SMCReadKeysCount(&count);
-        for(int i=0;i<count;i++){
+        if (kIOReturnSuccess != SMCReadKeysCount(&count)) {
+            count = 0;
+        }
+        for(UInt32 i=0;i<count;i++){
             SMCKeyValue val;
-            SMCReadKeyAtIndex(i, &val);
+            if (kIOReturnSuccess != SMCReadKeyAtIndex(i, &val)) {
+                continue;
+            }
             SMCCode key=val.key;
             char s[5]={key.code[3],key.code[2],key.code[1],key.code[0],0};
             NSString*name=[NSString stringWithUTF8String:s];
