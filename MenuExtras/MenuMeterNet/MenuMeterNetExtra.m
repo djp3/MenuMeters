@@ -748,7 +748,9 @@
 	// Loop over pixels in desired width until we're out of data
 	int renderPosition = 0;
 	float renderHeight = graphHeight - 0.5f;  // Save room for baseline
-	for (renderPosition = 0; renderPosition < [ourPrefs netGraphLength]; renderPosition++) {
+	int graphLength = [ourPrefs netGraphLength];
+	int scaleCalc = [ourPrefs netScaleCalc];
+	for (renderPosition = 0; renderPosition < graphLength; renderPosition++) {
 		// No data at this position?
 		if ((renderPosition >= [netHistoryData count]) ||
 			(renderPosition >= [netHistoryIntervals count])) break;
@@ -770,7 +772,7 @@
 		// Calc scaled values
 		float txValue = [[primaryStats objectForKey:@"deltaout"] floatValue] / sampleInterval;
 		float rxValue = [[primaryStats objectForKey:@"deltain"] floatValue] / sampleInterval;
-		switch ([ourPrefs netScaleCalc]) {
+		switch (scaleCalc) {
 			case kNetScaleCalcLinear:
 				txValue = txValue / scaleFactor;
 				rxValue = rxValue / scaleFactor;
