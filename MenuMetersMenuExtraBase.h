@@ -16,6 +16,7 @@
     NSStatusItem* statusItem;
     NSTimer* updateTimer;
     CGFloat menuWidth;
+    NSTimeInterval lastHiddenCheck;
 }
 -(NSColor*)colorByAdjustingForLightDark:(NSColor*)c;
 - (NSImage*)image;
@@ -24,6 +25,7 @@
 - (void)configDisplay:(NSString*)bundleID fromPrefs:(MenuMeterDefaults*)ourPrefs withTimerInterval:(NSTimeInterval)interval;
 - (void)configFromPrefs:(NSNotification*)notification;
 - (void)timerFired:(id)timer;
+- (void)checkHiddenBySystem;
 - (void)openMenuMetersPref:(id)sender;
 - (void)openActivityMonitor:(id)sender;
 - (void)addStandardMenuEntriesTo:(NSMenu*)extraMenu;

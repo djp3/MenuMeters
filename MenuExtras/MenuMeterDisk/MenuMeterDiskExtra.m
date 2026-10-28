@@ -296,12 +296,15 @@
 	// Have the monitor report state
 	DiskIOActivityType activity = [diskIOMonitor diskIOActivity];
 
-	// Only render if the state has changed
-	if (activity != displayedActivity) {
-		// Store out the new status
+	// The image is replaced only when it would look different
+	BOOL isDark = self.isDark;
+	if ((activity != displayedActivity) || (isDark != displayedIsDark)) {
 		displayedActivity = activity;
+		displayedIsDark = isDark;
+		[super timerFired:timer];
+	} else {
+		[self checkHiddenBySystem];
 	}
-	[super timerFired:timer];
 
 } // timerFired
 

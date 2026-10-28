@@ -77,6 +77,18 @@
 -(void)timerFired:(id)notused
 {
     statusItem.button.image=self.image;
+    [self checkHiddenBySystem];
+}
+// Asking the window server for every on-screen window is costly, so the
+// check runs a few seconds apart rather than on every tick of every meter.
+#define kHiddenCheckInterval 5.0
+-(void)checkHiddenBySystem
+{
+    NSTimeInterval now=[[NSProcessInfo processInfo] systemUptime];
+    if(now-lastHiddenCheck<kHiddenCheckInterval){
+        return;
+    }
+    lastHiddenCheck=now;
     if(@available(macOS 12,*)){
         if(self.isInstalledButHiddenBySystem){
             [[NSNotificationCenter defaultCenter] postNotificationName:@"hiddenBySystem" object:nil];
