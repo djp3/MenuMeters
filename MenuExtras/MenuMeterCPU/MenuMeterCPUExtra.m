@@ -79,6 +79,7 @@
 @implementation MenuMeterCPUExtra
 {
     float cpuTemperatureDisplayWidth;
+    float_t cpuTemperature; // the latest reading, taken once per timer tick
 }
 
 - (instancetype)init {
@@ -490,7 +491,7 @@
                     nil]];
 }
 - (void)renderSingleTemperatureAtOffset:(float)offset {
-    float_t celsius = [cpuInfo cpuProximityTemperature];
+    float_t celsius = cpuTemperature;
     float_t fahrenheit=celsius*1.8+32;
     NSString*temperatureString=@"";
     switch([ourPrefs cpuTemperatureUnit]){
@@ -585,6 +586,11 @@
 	// Get the current load
 	NSArray *currentLoad = [cpuInfo currentLoadBySorting:[ourPrefs cpuSortByUsage]];
 	if (!currentLoad) return;
+
+	// The temperature is read here so drawing the image never touches the sensor hardware
+	if ([ourPrefs cpuShowTemperature]) {
+		cpuTemperature = [cpuInfo cpuProximityTemperature];
+	}
 
 	// Add to history (at least one)
 	if ([ourPrefs cpuDisplayMode] & kCPUDisplayGraph) {
@@ -743,6 +749,7 @@
         }
     }
     if ([ourPrefs cpuShowTemperature]) {
+        cpuTemperature = [cpuInfo cpuProximityTemperature];
         cpuTemperatureDisplayWidth=1+[self renderTemperatureStringForString:@"66.6℃"].size.width;
         menuWidth += cpuTemperatureDisplayWidth;
     }
